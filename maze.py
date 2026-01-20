@@ -1,12 +1,13 @@
 #!/usr/bin/env python3
 
 import random
+from typing import Any, List, Dict, Union, Optional
 
-WIDTH = 10
-HEIGHT = 10
+
+WIDTH = 30
+HEIGHT = 30
 SEED = 42
 random.seed(SEED)
-
 """ Every cell has walls on all four sides initially.
 The maze must be written in the output file using one hexadecimal digit per cell
 A wall being closed sets the bit to 1, open means the 0
@@ -18,7 +19,9 @@ Bit 3 (8): Wall to the west (1 if closed, 0 if open)
 
 INITIAL_WALLS = 15
 
+locked_cells = []
 maze = {}
+
 for r in range(HEIGHT):
     for c in range(WIDTH):
         maze[(r, c)] = INITIAL_WALLS
@@ -29,7 +32,17 @@ def print_maze(maze):
             print(hex(maze[(r, c)])[2:], end='')
         print()
 
-def carve_passages_from(r, c):
+def check_42() -> bool:
+    x = int(HEIGHT / 2) - 3
+    for _ in range(6):
+        y = int(WIDTH / 2) - 3
+        for _ in range (6):
+            locked_cells.append((x, y))
+            y += 1
+        x += 1
+    print(locked_cells)
+
+def open_walls(r, c):
     WEST_WALL = 8
     SOUTH_WALL = 4
     EAST_WALL = 2
@@ -37,23 +50,25 @@ def carve_passages_from(r, c):
 
     directions = [(0, -1), (1, 0), (0, 1), (-1, 0)]
     random.shuffle(directions)
-    for dr, dc in directions:
-        nr, nc = r + dr, c + dc
-        if 0 <= nr < HEIGHT and 0 <= nc < WIDTH and maze[(nr, nc)] == INITIAL_WALLS:
-            if dr == 0 and dc == -1:  # West
+    for dir_row, dir_column in directions:
+        new_row, new_column = r + dir_row, c + dir_column
+        if 0 <= new_row < HEIGHT and 0 <= new_column < WIDTH and maze[(new_row, new_column)] == INITIAL_WALLS and (new_row, new_column) not in locked_cells:
+            if dir_row == 0 and dir_column == -1:  # West
                 maze[(r, c)] &= ~WEST_WALL
-                maze[(nr, nc)] &= ~EAST_WALL
-            elif dr == 1 and dc == 0:  # South
+                maze[(new_row, new_column)] &= ~EAST_WALL
+            elif dir_row == 1 and dir_column == 0:  # South
                 maze[(r, c)] &= ~SOUTH_WALL
-                maze[(nr, nc)] &= ~NORTH_WALL
-            elif dr == 0 and dc == 1:  # East
+                maze[(new_row, new_column)] &= ~NORTH_WALL
+            elif dir_row == 0 and dir_column == 1:  # East
                 maze[(r, c)] &= ~EAST_WALL
-                maze[(nr, nc)] &= ~WEST_WALL
-            elif dr == -1 and dc == 0:  # North
+                maze[(new_row, new_column)] &= ~WEST_WALL
+            elif dir_row == -1 and dir_column == 0:  # North
                 maze[(r, c)] &= ~NORTH_WALL
-                maze[(nr, nc)] &= ~SOUTH_WALL
+                maze[(new_row, new_column)] &= ~SOUTH_WALL
+            # print_maze(maze)
+            # print("\n\n")
+            open_walls(new_row, new_column)
 
-            carve_passages_from(nr, nc)
-
-carve_passages_from(0, 0)
+check_42()
+open_walls(0, 0)
 print_maze(maze)
