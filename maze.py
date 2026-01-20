@@ -19,6 +19,11 @@ Bit 3 (8): Wall to the west (1 if closed, 0 if open)
 
 INITIAL_WALLS = 15
 
+forty_two_sign = [1, 2, 3,
+                  8, 9, 10, 11, 12,
+                  17,
+                  21, 22, 24, 26, 27,
+                  28, 29, 31]
 locked_cells = []
 maze = {}
 
@@ -29,18 +34,25 @@ for r in range(HEIGHT):
 def print_maze(maze):
     for r in range(HEIGHT):
         for c in range(WIDTH):
-            print(hex(maze[(r, c)])[2:], end='')
+                s = str(hex(maze[(r, c)])[2:])
+                #if (s != 'f'):
+                #    s = ' '
+                print(s, end='')
+
         print()
 
 def check_42() -> bool:
+    count = 0
     x = int(HEIGHT / 2) - 3
-    for _ in range(6):
-        y = int(WIDTH / 2) - 3
-        for _ in range (6):
-            locked_cells.append((x, y))
+
+    for _ in range(5):
+        y = int(WIDTH / 2) - 4
+        for _ in range (7):
+            if count not in forty_two_sign:
+                locked_cells.append((x, y))
+            count += 1
             y += 1
         x += 1
-    print(locked_cells)
 
 def open_walls(r, c):
     WEST_WALL = 8
