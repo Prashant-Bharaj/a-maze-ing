@@ -4,8 +4,8 @@ import random
 from typing import Any, List, Dict, Union, Optional
 
 
-WIDTH = 30
-HEIGHT = 30
+WIDTH = 15
+HEIGHT = 15
 SEED = 42
 random.seed(SEED)
 """ Every cell has walls on all four sides initially.
@@ -38,7 +38,6 @@ def print_maze(maze):
                 #if (s != 'f'):
                 #    s = ' '
                 print(s, end='')
-
         print()
 
 def check_42() -> bool:
@@ -80,6 +79,8 @@ def open_walls(r, c):
             # print_maze(maze)
             # print("\n\n")
             open_walls(new_row, new_column)
+            # new_row = r 
+            # new_column = c
 
 check_42()
 open_walls(0, 0)
