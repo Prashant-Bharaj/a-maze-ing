@@ -1,0 +1,8 @@
+# Small maze configuration (too small for '42' pattern)
+WIDTH=5
+HEIGHT=4
+ENTRY=0,0
+EXIT=4,3
+OUTPUT_FILE=small_maze.txt
+PERFECT=True
+SEED=123

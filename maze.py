@@ -1,87 +1,420 @@
 #!/usr/bin/env python3
 
 import random
-from typing import Any, List, Dict, Union, Optional
+from typing import List, Tuple, Set, Dict, Optional
+from collections import deque
 
 
-WIDTH = 15
-HEIGHT = 15
-SEED = 42
-random.seed(SEED)
-""" Every cell has walls on all four sides initially.
-The maze must be written in the output file using one hexadecimal digit per cell
-A wall being closed sets the bit to 1, open means the 0
-Bit 0 (1): Wall to the north (1 if closed, 0 if open)
-Bit 1 (2): Wall to the east (1 if closed, 0 if open)
-Bit 2 (4): Wall to the south (1 if closed, 0 if open)
-Bit 3 (8): Wall to the west (1 if closed, 0 if open)
-"""
+class MazeGenerator:
+    """
+    Generates a maze with configurable parameters.
 
-INITIAL_WALLS = 15
+    Wall encoding (hexadecimal):
+    - Bit 0 (LSB, value 1): North wall
+    - Bit 1 (value 2): East wall
+    - Bit 2 (value 4): South wall
+    - Bit 3 (value 8): West wall
 
-forty_two_sign = [1, 2, 3,
-                  8, 9, 10, 11, 12,
-                  17,
-                  21, 22, 24, 26, 27,
-                  28, 29, 31]
-locked_cells = []
-maze = {}
+    A wall being closed sets the bit to 1, open means 0.
+    """
 
-for r in range(HEIGHT):
-    for c in range(WIDTH):
-        maze[(r, c)] = INITIAL_WALLS
+    # Wall bit masks
+    NORTH = 1
+    EAST = 2
+    SOUTH = 4
+    WEST = 8
+    ALL_WALLS = 15  # All walls closed
 
-def print_maze(maze):
-    for r in range(HEIGHT):
-        for c in range(WIDTH):
-                s = str(hex(maze[(r, c)])[2:])
-                #if (s != 'f'):
-                #    s = ' '
-                print(s, end='')
-        print()
+    # Direction vectors: (row_delta, col_delta)
+    DIRECTIONS = {"N": (-1, 0), "E": (0, 1), "S": (1, 0), "W": (0, -1)}
 
-def check_42() -> bool:
-    count = 0
-    x = int(HEIGHT / 2) - 3
+    # Opposite walls for consistency
+    OPPOSITE = {
+        "N": ("S", NORTH, SOUTH),
+        "E": ("W", EAST, WEST),
+        "S": ("N", SOUTH, NORTH),
+        "W": ("E", WEST, EAST),
+    }
 
-    for _ in range(5):
-        y = int(WIDTH / 2) - 4
-        for _ in range (7):
-            if count not in forty_two_sign:
-                locked_cells.append((x, y))
-            count += 1
-            y += 1
-        x += 1
+    def __init__(
+        self,
+        width: int,
+        height: int,
+        entry: Tuple[int, int],
+        exit: Tuple[int, int],
+        perfect: bool = True,
+        seed: Optional[int] = None,
+    ):
+        """
+        Initialize maze generator.
 
-def open_walls(r, c):
-    WEST_WALL = 8
-    SOUTH_WALL = 4
-    EAST_WALL = 2
-    NORTH_WALL = 1
+        Args:
+            width: Number of columns
+            height: Number of rows
+            entry: Entry coordinates (x, y) - column, row
+            exit: Exit coordinates (x, y) - column, row
+            perfect: If True, generates a perfect maze (single path)
+            seed: Random seed for reproducibility
+        """
+        self.width = width
+        self.height = height
+        self.entry = entry  # (x, y) format
+        self.exit = exit
+        self.perfect = perfect
+        self.seed = seed
 
-    directions = [(0, -1), (1, 0), (0, 1), (-1, 0)]
-    random.shuffle(directions)
-    for dir_row, dir_column in directions:
-        new_row, new_column = r + dir_row, c + dir_column
-        if 0 <= new_row < HEIGHT and 0 <= new_column < WIDTH and maze[(new_row, new_column)] == INITIAL_WALLS and (new_row, new_column) not in locked_cells:
-            if dir_row == 0 and dir_column == -1:  # West
-                maze[(r, c)] &= ~WEST_WALL
-                maze[(new_row, new_column)] &= ~EAST_WALL
-            elif dir_row == 1 and dir_column == 0:  # South
-                maze[(r, c)] &= ~SOUTH_WALL
-                maze[(new_row, new_column)] &= ~NORTH_WALL
-            elif dir_row == 0 and dir_column == 1:  # East
-                maze[(r, c)] &= ~EAST_WALL
-                maze[(new_row, new_column)] &= ~WEST_WALL
-            elif dir_row == -1 and dir_column == 0:  # North
-                maze[(r, c)] &= ~NORTH_WALL
-                maze[(new_row, new_column)] &= ~SOUTH_WALL
-            # print_maze(maze)
-            # print("\n\n")
-            open_walls(new_row, new_column)
-            # new_row = r 
-            # new_column = c
+        if seed is not None:
+            random.seed(seed)
 
-check_42()
-open_walls(0, 0)
-print_maze(maze)
+        # Initialize maze with all walls closed
+        self.maze: Dict[Tuple[int, int], int] = {}
+        for row in range(height):
+            for col in range(width):
+                self.maze[(row, col)] = self.ALL_WALLS
+
+        self.locked_cells: Set[Tuple[int, int]] = set()
+        self.visited: Set[Tuple[int, int]] = set()
+
+        # Validate parameters
+        self._validate_parameters()
+
+    def _validate_parameters(self):
+        """Validate maze parameters."""
+        if self.width <= 0 or self.height <= 0:
+            raise ValueError("Width and height must be positive")
+
+        ex, ey = self.entry
+        if not (0 <= ex < self.width and 0 <= ey < self.height):
+            raise ValueError(f"Entry ({ex}, {ey}) is outside maze bounds")
+
+        xx, xy = self.exit
+        if not (0 <= xx < self.width and 0 <= xy < self.height):
+            raise ValueError(f"Exit ({xx}, {xy}) is outside maze bounds")
+
+        if self.entry == self.exit:
+            raise ValueError("Entry and exit must be different")
+
+    def _create_42_pattern(self) -> bool:
+        """
+        Create a '42' pattern using locked cells.
+        Returns True if pattern was created, False if maze is too small.
+        """
+        # Need at least 7 columns and 5 rows for the pattern
+        if self.width < 7 or self.height < 5:
+            return False
+
+        # Pattern for '42' (cells that should be OPEN, rest are locked)
+        # 5 rows, 7 columns pattern
+        pattern_42 = [
+            [0, 1, 1, 0, 1, 1, 1],  # Row 0
+            [1, 0, 1, 0, 0, 0, 1],  # Row 1
+            [0, 1, 1, 0, 1, 1, 0],  # Row 2
+            [1, 0, 0, 0, 1, 0, 0],  # Row 3
+            [1, 1, 1, 0, 1, 1, 1],  # Row 4
+        ]
+
+        # Center the pattern
+        start_row = (self.height - 5) // 2
+        start_col = (self.width - 7) // 2
+
+        # Lock cells that are NOT part of the '42' shape
+        for i in range(5):
+            for j in range(7):
+                row = start_row + i
+                col = start_col + j
+                if pattern_42[i][j] == 0:  # Cell should be locked (fully walled)
+                    self.locked_cells.add((row, col))
+
+        return True
+
+    def _is_valid_cell(self, row: int, col: int) -> bool:
+        """Check if cell coordinates are within maze bounds."""
+        return 0 <= row < self.height and 0 <= col < self.width
+
+    def _carve_passage(
+        self, row: int, col: int, direction: str
+    ) -> Optional[Tuple[int, int]]:
+        """
+        Carve a passage from current cell in the given direction.
+        Returns the next cell coordinates or None if not possible.
+        """
+        dr, dc = self.DIRECTIONS[direction]
+        new_row, new_col = row + dr, col + dc
+
+        if not self._is_valid_cell(new_row, new_col):
+            return None
+
+        # Remove walls between cells
+        _, wall_from, wall_to = self.OPPOSITE[direction]
+        self.maze[(row, col)] &= ~wall_from
+        self.maze[(new_row, new_col)] &= ~wall_to
+
+        return (new_row, new_col)
+
+    def _generate_perfect_maze_dfs(self, start_row: int, start_col: int):
+        """Generate a perfect maze using recursive backtracking (DFS)."""
+        stack = [(start_row, start_col)]
+        self.visited.add((start_row, start_col))
+
+        while stack:
+            row, col = stack[-1]
+
+            # Get unvisited neighbors
+            neighbors = []
+            for direction in ["N", "E", "S", "W"]:
+                dr, dc = self.DIRECTIONS[direction]
+                new_row, new_col = row + dr, col + dc
+
+                if (
+                    self._is_valid_cell(new_row, new_col)
+                    and (new_row, new_col) not in self.visited
+                    and (new_row, new_col) not in self.locked_cells
+                ):
+                    neighbors.append((direction, new_row, new_col))
+
+            if neighbors:
+                # Choose random unvisited neighbor
+                direction, new_row, new_col = random.choice(neighbors)
+                self._carve_passage(row, col, direction)
+                self.visited.add((new_row, new_col))
+                stack.append((new_row, new_col))
+            else:
+                # Backtrack
+                stack.pop()
+
+    def _check_wide_corridor(self, row: int, col: int) -> bool:
+        """
+        Check if opening a passage would create a corridor wider than 2 cells.
+        Returns True if it would create an invalid wide corridor.
+        """
+        # Check for 3x3 open areas
+        for dr in range(-1, 2):
+            for dc in range(-1, 2):
+                r, c = row + dr, col + dc
+                if not self._is_valid_cell(r, c):
+                    continue
+
+                # Check if we have a 3x3 open area centered at (r, c)
+                open_count = 0
+                for i in range(-1, 2):
+                    for j in range(-1, 2):
+                        check_r, check_c = r + i, c + j
+                        if self._is_valid_cell(check_r, check_c):
+                            walls = self.maze[(check_r, check_c)]
+                            # Count as open if it has at least one open wall
+                            if walls != self.ALL_WALLS:
+                                open_count += 1
+
+                if open_count >= 9:  # All 9 cells in 3x3 are open
+                    return True
+
+        return False
+
+    def _add_extra_paths(self):
+        """Add extra passages for non-perfect mazes."""
+        # Number of extra passages to add
+        num_extra = max(1, (self.width * self.height) // 20)
+
+        attempts = 0
+        added = 0
+        max_attempts = num_extra * 10
+
+        while added < num_extra and attempts < max_attempts:
+            attempts += 1
+            row = random.randint(0, self.height - 1)
+            col = random.randint(0, self.width - 1)
+
+            if (row, col) in self.locked_cells:
+                continue
+
+            # Try to remove a wall
+            directions = list(self.DIRECTIONS.keys())
+            random.shuffle(directions)
+
+            for direction in directions:
+                dr, dc = self.DIRECTIONS[direction]
+                new_row, new_col = row + dr, col + dc
+
+                if (
+                    self._is_valid_cell(new_row, new_col)
+                    and (new_row, new_col) not in self.locked_cells
+                ):
+
+                    # Check if wall exists
+                    _, wall_from, _ = self.OPPOSITE[direction]
+                    if self.maze[(row, col)] & wall_from:
+                        # Try removing the wall
+                        self._carve_passage(row, col, direction)
+
+                        # Check if it creates a wide corridor
+                        if self._check_wide_corridor(row, col):
+                            # Restore the wall
+                            _, wall_from, wall_to = self.OPPOSITE[direction]
+                            self.maze[(row, col)] |= wall_from
+                            self.maze[(new_row, new_col)] |= wall_to
+                        else:
+                            added += 1
+                            break
+
+    def generate(self) -> bool:
+        """
+        Generate the maze.
+        Returns True if successful, False if maze is too small for '42' pattern.
+        """
+        # Create '42' pattern
+        pattern_created = self._create_42_pattern()
+
+        # Start generation from entry point
+        entry_row, entry_col = (
+            self.entry[1],
+            self.entry[0],
+        )  # Convert (x,y) to (row,col)
+
+        # Generate perfect maze using DFS
+        self._generate_perfect_maze_dfs(entry_row, entry_col)
+
+        # Add extra paths if not perfect
+        if not self.perfect:
+            self._add_extra_paths()
+
+        # Ensure entry and exit are accessible
+        self._ensure_entry_exit()
+
+        return pattern_created
+
+    def _ensure_entry_exit(self):
+        """Ensure entry and exit have proper wall configuration."""
+        entry_row, entry_col = self.entry[1], self.entry[0]
+        exit_row, exit_col = self.exit[1], self.exit[0]
+
+        # Entry at top-left corner should have opening to the right or down
+        # Exit at bottom-right should have opening to the left or up
+        # But maintain external walls
+
+        # Make sure entry has at least one passage
+        if (entry_row, entry_col) in self.locked_cells:
+            self.locked_cells.remove((entry_row, entry_col))
+
+        # Make sure exit has at least one passage
+        if (exit_row, exit_col) in self.locked_cells:
+            self.locked_cells.remove((exit_row, exit_col))
+
+    def find_shortest_path(self) -> List[str]:
+        """
+        Find the shortest path from entry to exit using BFS.
+        Returns a list of direction characters: N, E, S, W
+        """
+        entry_row, entry_col = self.entry[1], self.entry[0]
+        exit_row, exit_col = self.exit[1], self.exit[0]
+
+        queue = deque([(entry_row, entry_col, [])])
+        visited = {(entry_row, entry_col)}
+
+        while queue:
+            row, col, path = queue.popleft()
+
+            if row == exit_row and col == exit_col:
+                return path
+
+            # Check all four directions
+            for direction, (dr, dc) in self.DIRECTIONS.items():
+                # Check if wall is open in this direction
+                _, wall_mask, _ = self.OPPOSITE[direction]
+                if self.maze[(row, col)] & wall_mask:
+                    continue  # Wall is closed
+
+                new_row, new_col = row + dr, col + dc
+
+                if (
+                    self._is_valid_cell(new_row, new_col)
+                    and (new_row, new_col) not in visited
+                ):
+                    visited.add((new_row, new_col))
+                    queue.append((new_row, new_col, path + [direction]))
+
+        return []  # No path found
+
+    def to_hex_string(self) -> str:
+        """
+        Convert maze to hexadecimal string format.
+        Returns one hex digit per cell, rows separated by newlines.
+        """
+        lines = []
+        for row in range(self.height):
+            line = ""
+            for col in range(self.width):
+                hex_val = hex(self.maze[(row, col)])[2:].upper()
+                line += hex_val
+            lines.append(line)
+        return "\n".join(lines)
+
+    def to_output_format(self) -> str:
+        """
+        Generate complete output format including maze, coordinates, and path.
+        """
+        output = []
+
+        # Add hex maze
+        output.append(self.to_hex_string())
+        output.append("")  # Empty line
+
+        # Add entry coordinates (x, y format)
+        output.append(f"{self.entry[0]},{self.entry[1]}")
+
+        # Add exit coordinates
+        output.append(f"{self.exit[0]},{self.exit[1]}")
+
+        # Add shortest path
+        path = self.find_shortest_path()
+        output.append("".join(path))
+
+        return "\n".join(output) + "\n"
+
+    def visualize(self) -> str:
+        """
+        Create a visual ASCII representation of the maze.
+        """
+        # Each cell is represented by 3x3 characters
+        vis_width = self.width * 2 + 1
+        vis_height = self.height * 2 + 1
+        grid = [[" " for _ in range(vis_width)] for _ in range(vis_height)]
+
+        for row in range(self.height):
+            for col in range(self.width):
+                walls = self.maze[(row, col)]
+
+                # Top-left corner of this cell in visualization
+                vr = row * 2
+                vc = col * 2
+
+                # Always draw corners
+                grid[vr][vc] = "+"
+
+                # North wall
+                if walls & self.NORTH:
+                    grid[vr][vc + 1] = "-"
+
+                # West wall
+                if walls & self.WEST:
+                    grid[vr + 1][vc] = "|"
+
+                # Draw right and bottom borders for last column/row
+                if col == self.width - 1:
+                    grid[vr][vc + 2] = "+"
+                    if walls & self.EAST:
+                        grid[vr + 1][vc + 2] = "|"
+
+                if row == self.height - 1:
+                    grid[vr + 2][vc] = "+"
+                    if walls & self.SOUTH:
+                        grid[vr + 2][vc + 1] = "-"
+                    if col == self.width - 1:
+                        grid[vr + 2][vc + 2] = "+"
+
+        # Mark entry and exit
+        entry_row, entry_col = self.entry[1], self.entry[0]
+        exit_row, exit_col = self.exit[1], self.exit[0]
+        grid[entry_row * 2 + 1][entry_col * 2 + 1] = "S"
+        grid[exit_row * 2 + 1][exit_col * 2 + 1] = "E"
+
+        return "\n".join("".join(row) for row in grid)

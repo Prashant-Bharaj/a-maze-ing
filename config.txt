@@ -1,0 +1,22 @@
+# Default maze configuration file
+# Lines starting with # are comments
+
+# Maze dimensions
+WIDTH=20
+HEIGHT=15
+
+# Entry and exit coordinates (x,y format)
+ENTRY=0,0
+EXIT=19,14
+
+# Output file for the generated maze
+OUTPUT_FILE=output_maze.txt
+
+# Perfect maze flag (True = single path, False = multiple paths)
+PERFECT=True
+
+# Optional: Random seed for reproducibility
+SEED=42
+
+# Optional: Algorithm choice (dfs, kruskal, prim)
+ALGORITHM=dfs
