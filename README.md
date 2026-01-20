@@ -1,5 +1,8 @@
-<<<<<<< HEAD
-# mazegen
+*This project has been created as part of the 42 curriculum by msantos2, prasingh.*
+
+# A-MAZE-ING
+
+## mazegen
 
 Reusable maze generator providing a single-module `MazeGenerator` class plus solution extraction.
 
@@ -16,14 +19,16 @@ pip install .
 from mazegen import MazeGenerator
 
 gen = MazeGenerator(width=8, height=6, seed=42)
-print(gen.to_hex_string())   # hex grid lines
+print(gen.to_hex_string())   #
+>>>>>>> ba686fe (done)
+ hex grid lines
 print(gen.solution_path)     # list of (row, col)
 ```
 
 ## Build wheel / sdist
 ```bash
 source .venv/bin/activate
-pip install --upgrade build
+pip install --upgrade build=======
 python -m build
 ls dist  # contains mazegen-<version>-py3-none-any.whl and .tar.gz
 ```
@@ -32,12 +37,8 @@ ls dist  # contains mazegen-<version>-py3-none-any.whl and .tar.gz
 - Grid stored as 2D list of ints; bits mark openings (N=1, E=2, S=4, W=8).
 - `to_hex_string()` returns newline-separated hex digits per row; matches the validator format.
 - `solution_path` gives the shortest path from `start` to `goal` using carved passages.
-=======
-*This project has been created as part of the 42 curriculum by msantos2, prasingh.*
 
-# A-MAZE-ING
-
-## Descrition
+## Description
 
 ## Instructions
 
@@ -93,7 +94,8 @@ Once `mypy` and `flake8` are installed, you can execute using
 make lint
 ```
 Execute the commands `flake8` and `mypy` --strict
- ```bash
+ ```bashMypy requires `Python 3.9` or later to run. You can install `mypy` using `pip`:
+
 make lint-strict
 ```
 
