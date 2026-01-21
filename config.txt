@@ -2,8 +2,8 @@
 # Lines starting with # are comments
 
 # Maze dimensions
-WIDTH=8
-HEIGHT=6
+WIDTH=15
+HEIGHT=16
 
 # Entry and exit coordinates (x,y format)
 ENTRY=0,1

@@ -16,6 +16,7 @@ install:
 	else \
 		echo "No $(REQ) found; skipping dependency install"; \
 	fi
+	pip install --force-reinstall mazegen-1.0.0-py3-none-any.whl
 
 run: install
 	. $(VENV_BIN)/activate && $(PYTHON) $(MAIN) config.txt
