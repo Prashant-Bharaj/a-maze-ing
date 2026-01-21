@@ -12,7 +12,7 @@ from collections import deque
 from maze_visualize import visualize
 
 if TYPE_CHECKING:
-    from maze import MazeGenerator
+    from mazegen import MazeGenerator
 
 
 def _clear_screen() -> None:

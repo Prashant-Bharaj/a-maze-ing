@@ -6,7 +6,7 @@ from typing import Dict, List, Optional, TYPE_CHECKING
 from maze_pathfinding import get_path_cells
 
 if TYPE_CHECKING:
-    from maze import MazeGenerator
+    from mazegen import MazeGenerator
 
 
 def visualize(

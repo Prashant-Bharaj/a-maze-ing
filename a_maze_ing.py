@@ -10,7 +10,7 @@ import os
 import time
 from typing import Dict, Any
 
-from maze import MazeGenerator
+from mazegen import MazeGenerator
 from maze_pathfinding import find_shortest_path
 from maze_format import to_output_format
 from maze_visualize import visualize
