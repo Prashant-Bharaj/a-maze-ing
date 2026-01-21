@@ -7,12 +7,14 @@ Supports interactive visual mode with: regenerate, show/hide path, wall/path/42 
 
 import sys
 import os
+import time
 from typing import Dict, Any
 
 from maze import MazeGenerator
 from maze_pathfinding import find_shortest_path
 from maze_format import to_output_format
 from maze_visualize import visualize
+from maze_animate import animate_maze_drawing, animate_pathfinding, animate_maze_with_path
 
 
 def _enable_windows_ansi() -> None:
@@ -267,7 +269,7 @@ def validate_and_convert_config(config: Dict[str, Any]) -> Dict[str, Any]:
 
 
 def generate_maze_from_config(
-    config_file: str, visual: bool = False
+    config_file: str, visual: bool = False, animate: bool = False, animate_algo: bool = False
 ) -> None:
     """
     Main function to generate a maze from a configuration file.
@@ -275,6 +277,8 @@ def generate_maze_from_config(
     Args:
         config_file: Path to the configuration file
         visual: If True, run interactive terminal visual mode after generating.
+        animate: If True, animate maze drawing line by line.
+        animate_algo: If True, animate the pathfinding algorithm solving the maze.
     """
     try:
         # Parse configuration
@@ -299,7 +303,13 @@ def generate_maze_from_config(
         # Generate the maze
         pattern_created = generator.generate()
         
-        path = find_shortest_path(generator)
+        if animate_algo:
+            print("\n" + "="*50)
+            path = animate_pathfinding(generator, delay=0.08, use_color=True)
+            print("="*50)
+        else:
+            path = find_shortest_path(generator)
+        
         if not path:
             print("ERROR: No path exists between entry and exit!")
             sys.exit(1)
@@ -313,13 +323,25 @@ def generate_maze_from_config(
             f.write(to_output_format(generator, path))
         print(f"Maze written successfully to '{output_file}'")
 
-        if not visual:
+        # Animation: maze drawing + path tracing
+        if animate:
+            _clear_screen()
+            animate_maze_with_path(generator, path, draw_delay=0.05, highlight_delay=0.08, use_color=True)
+            print(f"\nEntry: {params['entry']}")
+            print(f"Exit: {params['exit']}")
+            print(f"Path: {''.join(path)}")
+            time.sleep(2)
+        elif not visual:
             print("\nVisual representation:")
             print(visualize(generator, path))
 
-        print(f"\nEntry: {params['entry']}")
-        print(f"Exit: {params['exit']}")
-        print(f"Path: {''.join(path)}")
+            print(f"\nEntry: {params['entry']}")
+            print(f"Exit: {params['exit']}")
+            print(f"Path: {''.join(path)}")
+        else:
+            print(f"\nEntry: {params['entry']}")
+            print(f"Exit: {params['exit']}")
+            print(f"Path: {''.join(path)}")
 
         if visual:
             print("\nStarting interactive visual mode...")
@@ -342,9 +364,12 @@ def generate_maze_from_config(
 def main():
     """Main entry point for the program."""
     if len(sys.argv) < 2:
-        print("Usage: python3 a_maze_ing.py config.txt [-v|--visual]", file=sys.stderr)
+        print("Usage: python3 a_maze_ing.py config.txt [OPTIONS]", file=sys.stderr)
         print("\nGenerates a maze from a configuration file.", file=sys.stderr)
-        print("  -v, --visual     Run interactive terminal visual mode.", file=sys.stderr)
+        print("Options:", file=sys.stderr)
+        print("  -v, --visual         Run interactive terminal visual mode.", file=sys.stderr)
+        print("  -a, --animate        Animate maze drawing line by line.", file=sys.stderr)
+        print("  --animate-algo       Animate pathfinding algorithm visualization.", file=sys.stderr)
         print("\nConfiguration file format:", file=sys.stderr)
         print("  WIDTH=<number>        - Maze width in cells", file=sys.stderr)
         print("  HEIGHT=<number>       - Maze height in cells", file=sys.stderr)
@@ -357,8 +382,10 @@ def main():
 
     config_file = sys.argv[1]
     visual = "--visual" in sys.argv or "-v" in sys.argv
+    animate = "--animate" in sys.argv or "-a" in sys.argv
+    animate_algo = "--animate-algo" in sys.argv
     _enable_windows_ansi()
-    generate_maze_from_config(config_file, visual=visual)
+    generate_maze_from_config(config_file, visual=visual, animate=animate, animate_algo=animate_algo)
 
 
 if __name__ == "__main__":
