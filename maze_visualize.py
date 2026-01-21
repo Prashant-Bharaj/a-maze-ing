@@ -109,11 +109,11 @@ def visualize(
 
     pattern_cells = gen.get_42_pattern_cells()
     if pattern_42_color:
-        for (r, c) in pattern_cells:
+        for r, c in pattern_cells:
             grid[r * 2 + 1][c * 2 + 1] = "\u2591"
 
     if show_path and path:
-        for (r, c) in get_path_cells(gen, path):
+        for r, c in get_path_cells(gen, path):
             grid[r * 2 + 1][c * 2 + 1] = "*"
 
     entry_row, entry_col = gen.entry[1], gen.entry[0]

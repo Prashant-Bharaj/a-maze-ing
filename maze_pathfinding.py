@@ -48,9 +48,7 @@ def find_shortest_path(gen: "MazeGenerator") -> List[str]:
     return []
 
 
-def get_path_cells(
-    gen: "MazeGenerator", path_dirs: List[str]
-) -> Set[Tuple[int, int]]:
+def get_path_cells(gen: "MazeGenerator", path_dirs: List[str]) -> Set[Tuple[int, int]]:
     """
     Return the set of cell coordinates (row, col) for the given path
     from entry to exit.

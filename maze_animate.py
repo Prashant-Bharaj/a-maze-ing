@@ -41,7 +41,7 @@ def animate_maze_drawing(
     RESET = "\033[0m"
     WALL_COLOR = "\033[34m"  # Blue for walls
     EMPTY_COLOR = "\033[37m"  # White for empty space
-    
+
     vis_width = gen.width * 2 + 1
     vis_height = gen.height * 2 + 1
     grid = [[" " for _ in range(vis_width)] for _ in range(vis_height)]
@@ -85,7 +85,7 @@ def animate_maze_drawing(
     grid[exit_vr][exit_vc] = "E"
 
     _clear_screen()
-    
+
     # Animate line by line
     for vr in range(vis_height):
         line = ""
@@ -129,7 +129,6 @@ def animate_pathfinding(
     PATH_COLOR = "\033[32m"  # Green
     FOURTY_TWO_COLOR = "\033[33M"  # Yellow
 
-    
     entry_row, entry_col = gen.entry[1], gen.entry[0]
     exit_row, exit_col = gen.exit[1], gen.exit[0]
 
@@ -203,7 +202,7 @@ def animate_maze_with_path(
     print("STEP 1: Drawing maze structure...")
     time.sleep(1)
     animate_maze_drawing(gen, delay=draw_delay, use_color=use_color)
-    
+
     time.sleep(1)
 
     # Build the maze visual
@@ -226,14 +225,13 @@ def animate_maze_with_path(
         [0, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1, 0, 1],  # Row 4
     ]
     RESET = "\033[0m"
-    WALL_COLOR = "\033[34m" 
+    WALL_COLOR = "\033[34m"
     for i in range(9):
         for j in range(13):
             row = start_row + i
             col = start_col + j
             if pattern_42[i][j] == 1:  # Cell should be locked (fully walled)
                 grid[row + 1][col + 1] = f"{WALL_COLOR}{chr(9608)}{RESET}"
-
 
     for row in range(gen.height):
         for col in range(gen.width):
@@ -273,7 +271,7 @@ def animate_maze_with_path(
     WALL_COLOR = "\033[34m"  # Blue for walls
     PATH_COLOR = "\033[32m"  # Green for path
     ENTRY_COLOR = "\033[33m"  # Yellow
-    EXIT_COLOR = "\033[31m"   # Red
+    EXIT_COLOR = "\033[31m"  # Red
 
     _clear_screen()
     for r in range(vis_height):
@@ -310,12 +308,12 @@ def animate_maze_with_path(
     for idx, (row, col) in enumerate(path_cells):
         if idx == 0 or idx == len(path_cells) - 1:
             continue  # Skip start and end as they're already marked
-        
+
         # Mark path in cell interior (not corner)
         vr = row * 2 + 1
         vc = col * 2 + 1
         grid[vr][vc] = "*"
-        
+
         # Redraw entire maze
         _clear_screen()
         for r in range(vis_height):
@@ -336,7 +334,7 @@ def animate_maze_with_path(
                 else:
                     line += char
             print(line)
-        
+
         time.sleep(highlight_delay)
 
     print("\nPath trace complete!")
