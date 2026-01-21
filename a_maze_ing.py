@@ -317,8 +317,9 @@ def generate_maze_from_config(
             f.write(to_output_format(generator, path))
         print(f"Maze written successfully to '{output_file}'")
 
-        print("\nVisual representation:")
-        print(visualize(generator, path))
+        if not visual:
+            print("\nVisual representation:")
+            print(visualize(generator, path))
 
         print(f"\nEntry: {params['entry']}")
         print(f"Exit: {params['exit']}")
