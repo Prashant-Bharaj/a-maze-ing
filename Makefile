@@ -32,9 +32,9 @@ clean:
 	find . -type f -name "*.pyc" -delete
 
 lint: install
-	$(VENV_BIN)/flake8 SRC
+	$(VENV_BIN)/flake8 $(SRC)
 	$(VENV_BIN)/mypy . $(MYPY_FLAGS)
 
 lint-strict: install
-	. $(VENV_BIN)/activate && $(VENV_BIN)/flake8 .
-	. $(VENV_BIN)/activate && $(VENV_BIN)/mypy . --strict
+	$(VENV_BIN)/flake8 $(SRC)
+	$(VENV_BIN)/mypy . --strict
