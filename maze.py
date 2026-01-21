@@ -64,7 +64,7 @@ class MazeGenerator:
         self.entry = entry  # (x, y) format
         self.exit = exit
         self.perfect = perfect
-        self.seed = seed
+        self.seed = None
 
         if seed is not None:
             random.seed(seed)
@@ -97,6 +97,12 @@ class MazeGenerator:
 
         if self.entry == self.exit:
             raise ValueError("Entry and exit must be different")
+        
+        if self.height < 5 or self.width < 7:
+            raise ValueError("Maze is too small to include the '42' pattern (minimum 7x5 required)")
+        
+        if self.height == 5 or self.width == 7:
+            raise ValueError("The maze is too small. Not all cells are reachable.")
 
     def _create_42_pattern(self) -> bool:
         """
@@ -124,10 +130,8 @@ class MazeGenerator:
             for j in range(7):
                 row = start_row + i
                 col = start_col + j
-                if pattern_42[i][j] == 0:  # Cell should be locked (fully walled)
+                if pattern_42[i][j] == 1:  # Cell should be locked (fully walled)
                     self.locked_cells.add((row, col))
-                else:  # Part of the '42' shape
-                    self._pattern_42_cells.add((row, col))
 
         return True
 

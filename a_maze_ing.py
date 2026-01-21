@@ -300,9 +300,6 @@ def generate_maze_from_config(
         # Generate the maze
         pattern_created = generator.generate()
         
-        if not pattern_created:
-            print("WARNING: Maze is too small to include the '42' pattern (minimum 7x5 required)")
-        
         path = find_shortest_path(generator)
         if not path:
             print("ERROR: No path exists between entry and exit!")
