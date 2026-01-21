@@ -2,12 +2,12 @@
 # Lines starting with # are comments
 
 # Maze dimensions
-WIDTH=28
-HEIGHT=20
+WIDTH=8
+HEIGHT=6
 
 # Entry and exit coordinates (x,y format)
-ENTRY=0,0
-EXIT=16,15
+ENTRY=0,1
+EXIT=6,5
 
 # Output file for the generated maze
 OUTPUT_FILE=output_maze.txt

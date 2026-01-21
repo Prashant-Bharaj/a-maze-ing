@@ -104,6 +104,7 @@ class MazeGenerator:
         if self.height == 5 or self.width == 7:
             raise ValueError("The maze is too small. Not all cells are reachable (minimum 8x6 required).")
 
+
     def _create_42_pattern(self) -> bool:
         """
         Create a '42' pattern using locked cells.
@@ -132,6 +133,11 @@ class MazeGenerator:
                 col = start_col + j
                 if pattern_42[i][j] == 1:  # Cell should be locked (fully walled)
                     self.locked_cells.add((row, col))
+
+        if self.entry[::-1] in self.locked_cells:
+            raise ValueError("Invalid entry: the entry position is inside the locked “42” pattern.")
+        if self.exit[::-1] in self.locked_cells:
+            raise ValueError("Invalid exit: exit position is inside the locked “42” pattern.")
 
         return True
 
