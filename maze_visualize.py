@@ -26,7 +26,8 @@ def visualize(
 
     Args:
         gen: A MazeGenerator instance with a generated maze.
-        path: Shortest path from find_shortest_path; used when show_path is True.
+        path: Shortest path from find_shortest_path; used when
+        show_path is True.
         show_path: If True, display the shortest path with a marker.
         wall_color: ANSI color name for walls (e.g. 'red', 'cyan').
         path_color: ANSI color name for path cells.

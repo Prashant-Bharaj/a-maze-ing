@@ -1,8 +1,9 @@
 #!/usr/bin/env python3
 """
 A-MAZE-ING Maze Generator
-Generates a maze from a configuration file and outputs it in hexadecimal format.
-Supports interactive visual mode with: regenerate, show/hide path, wall/path/42 colors.
+Generates a maze from a configuration file and outputs it in hexadecimal
+Supports interactive visual mode with: regenerate, show/hide path,
+wall/path/42 colors.
 """
 
 import sys
@@ -15,7 +16,6 @@ from maze_pathfinding import find_shortest_path
 from maze_format import to_output_format
 from maze_visualize import visualize
 from maze_animate import (
-    animate_maze_drawing,
     animate_pathfinding,
     animate_maze_with_path,
 )
@@ -30,7 +30,8 @@ def _enable_windows_ansi() -> None:
 
         kernel32 = ctypes.windll.kernel32  # type: ignore[attr-defined]
         handle = kernel32.GetStdHandle(-11)  # STD_OUTPUT_HANDLE
-        kernel32.SetConsoleMode(handle, 7)  # ENABLE_VT + ENABLE_PROCESSED_OUTPUT etc.
+        # ENABLE_VT + ENABLE_PROCESSED_OUTPUT etc.
+        kernel32.SetConsoleMode(handle, 7)
     except Exception:
         pass
 
@@ -41,7 +42,8 @@ def _clear_screen() -> None:
 
 
 def _next_item(options: list, current: Any) -> Any:
-    """Cycle to the next item in options; if current not in list, return first."""
+    """Cycle to the next item in options;
+    if current not in list, return first."""
     try:
         i = options.index(current)
         return options[(i + 1) % len(options)]
@@ -49,7 +51,10 @@ def _next_item(options: list, current: Any) -> Any:
         return options[0]
 
 
-def run_visual_interactive(params: Dict[str, Any], generator: MazeGenerator) -> None:
+def run_visual_interactive(
+    params: Dict[str, Any],
+    generator: MazeGenerator,
+) -> None:
     """
     Run an interactive terminal visualisation of the maze.
     - [R]egenerate: create a new maze and write to OUTPUT_FILE.
@@ -59,7 +64,15 @@ def run_visual_interactive(params: Dict[str, Any], generator: MazeGenerator) -> 
     - [A]ccent: cycle path/accent colour.
     - [Q]uit: exit.
     """
-    WALL_COLORS = ["white", "red", "green", "yellow", "blue", "magenta", "cyan"]
+    WALL_COLORS = [
+        "white",
+        "red",
+        "green",
+        "yellow",
+        "blue",
+        "magenta",
+        "cyan",
+    ]
     PATH_COLORS = ["green", "yellow", "magenta", "cyan"]
     PATTERN_42_OPTS: list = [None, "cyan", "magenta", "blue"]
 
@@ -202,7 +215,14 @@ def validate_and_convert_config(config: Dict[str, Any]) -> Dict[str, Any]:
         ValueError: If configuration is invalid
     """
     # Check mandatory keys
-    mandatory_keys = ["WIDTH", "HEIGHT", "ENTRY", "EXIT", "OUTPUT_FILE", "PERFECT"]
+    mandatory_keys = [
+        "WIDTH",
+        "HEIGHT",
+        "ENTRY",
+        "EXIT",
+        "OUTPUT_FILE",
+        "PERFECT",
+    ]
     missing_keys = [key for key in mandatory_keys if key not in config]
 
     if missing_keys:
@@ -291,7 +311,8 @@ def generate_maze_from_config(
         config_file: Path to the configuration file
         visual: If True, run interactive terminal visual mode after generating.
         animate: If True, animate maze drawing line by line.
-        animate_algo: If True, animate the pathfinding algorithm solving the maze.
+        animate_algo: If True, animate the pathfinding
+        algorithm solving the maze.
     """
     try:
         # Parse configuration
@@ -314,11 +335,15 @@ def generate_maze_from_config(
         )
 
         # Generate the maze
-        pattern_created = generator.generate()
+        generator.generate()
 
         if animate_algo:
             print("\n" + "=" * 50)
-            path = animate_pathfinding(generator, delay=0.08, use_color=True)
+            path = animate_pathfinding(
+                generator,
+                delay=0.08,
+                use_color=True,
+            )
             print("=" * 50)
         else:
             path = find_shortest_path(generator)
@@ -327,7 +352,7 @@ def generate_maze_from_config(
             print("ERROR: No path exists between entry and exit!")
             sys.exit(1)
 
-        print(f"Maze generated successfully!")
+        print("Maze generated successfully!")
         print(f"Shortest path length: {len(path)} steps")
 
         output_file = params["output_file"]
@@ -340,7 +365,11 @@ def generate_maze_from_config(
         if animate:
             _clear_screen()
             animate_maze_with_path(
-                generator, path, draw_delay=0.05, highlight_delay=0.08, use_color=True
+                generator,
+                path,
+                draw_delay=0.05,
+                highlight_delay=0.08,
+                use_color=True,
             )
             print(f"\nEntry: {params['entry']}")
             print(f"Exit: {params['exit']}")
@@ -379,28 +408,27 @@ def generate_maze_from_config(
 def main():
     """Main entry point for the program."""
     if len(sys.argv) < 2:
-        print("Usage: python3 a_maze_ing.py config.txt [OPTIONS]", file=sys.stderr)
-        print("\nGenerates a maze from a configuration file.", file=sys.stderr)
-        print("Options:", file=sys.stderr)
         print(
-            "  -v, --visual         Run interactive terminal visual mode.",
+            """Usage: python3 a_maze_ing.py config.txt [OPTIONS]
+
+        Generates a maze from a configuration file.
+
+        Options:
+          -v, --visual           Run interactive terminal visual mode.
+          -a, --animate          Animate maze drawing line by line.
+          --animate-algo         Animate pathfinding algorithm visualization.
+
+        Configuration file format:
+          WIDTH=<number>         - Maze width in cells
+          HEIGHT=<number>        - Maze height in cells
+          ENTRY=<x>,<y>          - Entry coordinates
+          EXIT=<x>,<y>           - Exit coordinates
+          OUTPUT_FILE=<path>     - Output file path
+          PERFECT=<True|False>   - Perfect maze flag
+          SEED=<number>          - Random seed (optional)
+        """,
             file=sys.stderr,
         )
-        print(
-            "  -a, --animate        Animate maze drawing line by line.", file=sys.stderr
-        )
-        print(
-            "  --animate-algo       Animate pathfinding algorithm visualization.",
-            file=sys.stderr,
-        )
-        print("\nConfiguration file format:", file=sys.stderr)
-        print("  WIDTH=<number>        - Maze width in cells", file=sys.stderr)
-        print("  HEIGHT=<number>       - Maze height in cells", file=sys.stderr)
-        print("  ENTRY=<x>,<y>         - Entry coordinates", file=sys.stderr)
-        print("  EXIT=<x>,<y>          - Exit coordinates", file=sys.stderr)
-        print("  OUTPUT_FILE=<path>    - Output file path", file=sys.stderr)
-        print("  PERFECT=<True|False>  - Perfect maze flag", file=sys.stderr)
-        print("  SEED=<number>         - Random seed (optional)", file=sys.stderr)
         sys.exit(1)
 
     config_file = sys.argv[1]

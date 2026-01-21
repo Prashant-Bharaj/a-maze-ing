@@ -1,15 +1,13 @@
 #!/usr/bin/env python3
 """
 Animation module for maze drawing and algorithm solving visualization.
-Supports line-by-line maze drawing animation and step-by-step pathfinding visualization.
+Supports line-by-line maze drawing animation and step-by-step pathfinding
+visualization.
 """
 
 import time
-import sys
-from typing import Dict, List, Optional, Set, Tuple, TYPE_CHECKING
+from typing import Dict, List, Set, Tuple, TYPE_CHECKING
 from collections import deque
-
-from maze_visualize import visualize
 
 if TYPE_CHECKING:
     from mazegen import MazeGenerator
@@ -40,7 +38,6 @@ def animate_maze_drawing(
     """
     RESET = "\033[0m"
     WALL_COLOR = "\033[34m"  # Blue for walls
-    EMPTY_COLOR = "\033[37m"  # White for empty space
 
     vis_width = gen.width * 2 + 1
     vis_height = gen.height * 2 + 1
@@ -121,13 +118,6 @@ def animate_pathfinding(
     Returns:
         List of direction characters representing the shortest path.
     """
-    RESET = "\033[0m"
-    WALL_COLOR = "\033[34m"  # Blue
-    EMPTY_COLOR = "\033[37m"  # White
-    EXPLORED_COLOR = "\033[33m"  # Yellow
-    FRONTIER_COLOR = "\033[36m"  # Cyan
-    PATH_COLOR = "\033[32m"  # Green
-    FOURTY_TWO_COLOR = "\033[33M"  # Yellow
 
     entry_row, entry_col = gen.entry[1], gen.entry[0]
     exit_row, exit_col = gen.exit[1], gen.exit[0]
@@ -171,7 +161,10 @@ def animate_pathfinding(
 
             step += 1
             if step % 5 == 0:  # Print status every 5 steps
-                print(f"Explored: {step} cells | Queue size: {len(queue)}", end="\r")
+                print(
+                    f"Explored: {step} cells | Queue size: {len(queue)}",
+                    end="\r",
+                )
             time.sleep(delay)
 
     print(f"\nExplored: {len(visited)} cells")
@@ -189,7 +182,8 @@ def animate_maze_with_path(
     use_color: bool = True,
 ) -> None:
     """
-    First animate drawing the maze, then animate highlighting the solution path.
+    First animate drawing the maze, then animate highlighting
+    the solution path.
 
     Args:
         gen: A MazeGenerator instance with a generated maze.
