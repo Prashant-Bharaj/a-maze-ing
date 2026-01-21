@@ -267,7 +267,7 @@ def validate_and_convert_config(config: Dict[str, Any]) -> Dict[str, Any]:
 
 
 def generate_maze_from_config(
-    config_file: str, visual: bool = False, graphical: bool = False
+    config_file: str, visual: bool = False
 ) -> None:
     """
     Main function to generate a maze from a configuration file.
@@ -275,7 +275,6 @@ def generate_maze_from_config(
     Args:
         config_file: Path to the configuration file
         visual: If True, run interactive terminal visual mode after generating.
-        graphical: If True, open a MiniLibX (mlx) window with the maze. Requires mlx on Ubuntu: pip install ./mlx-2.2-py3-ubuntu-any.whl
     """
     try:
         # Parse configuration
@@ -322,24 +321,6 @@ def generate_maze_from_config(
         print(f"Exit: {params['exit']}")
         print(f"Path: {''.join(path)}")
 
-        if graphical:
-            try:
-                from maze_graphics import run_graphics
-
-                print("\nOpening graphical display (close window or press ESC/Q to exit)...")
-                run_graphics(generator, path, show_path=True, show_42=True)
-            except ImportError:
-                print(
-                    "Graphics (mlx) not available. On Ubuntu: pip install ./mlx-2.2-py3-ubuntu-any.whl",
-                    file=sys.stderr,
-                )
-            except RuntimeError as e:
-                print(f"Graphics unavailable: {e}", file=sys.stderr)
-                print(
-                    "On Ubuntu: pip install ./mlx-2.2-py3-ubuntu-any.whl",
-                    file=sys.stderr,
-                )
-
         if visual:
             print("\nStarting interactive visual mode...")
             run_visual_interactive(params, generator)
@@ -361,10 +342,9 @@ def generate_maze_from_config(
 def main():
     """Main entry point for the program."""
     if len(sys.argv) < 2:
-        print("Usage: python3 a_maze_ing.py config.txt [-v|--visual] [-g|--graphical]", file=sys.stderr)
+        print("Usage: python3 a_maze_ing.py config.txt [-v|--visual]", file=sys.stderr)
         print("\nGenerates a maze from a configuration file.", file=sys.stderr)
         print("  -v, --visual     Run interactive terminal visual mode.", file=sys.stderr)
-        print("  -g, --graphical  Open a graphical (MiniLibX/mlx) window of the maze.", file=sys.stderr)
         print("\nConfiguration file format:", file=sys.stderr)
         print("  WIDTH=<number>        - Maze width in cells", file=sys.stderr)
         print("  HEIGHT=<number>       - Maze height in cells", file=sys.stderr)
@@ -377,8 +357,8 @@ def main():
 
     config_file = sys.argv[1]
     visual = "--visual" in sys.argv or "-v" in sys.argv
-    graphical = "--graphical" in sys.argv or "-g" in sys.argv
-    generate_maze_from_config(config_file, visual=visual, graphical=graphical)
+    _enable_windows_ansi()
+    generate_maze_from_config(config_file, visual=visual)
 
 
 if __name__ == "__main__":
