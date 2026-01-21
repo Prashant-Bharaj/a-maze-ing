@@ -5,6 +5,7 @@ MAIN ?= a_maze_ing.py
 REQ ?= requirements.txt
 MYPY_FLAGS := --warn-return-any --warn-unused-ignores --ignore-missing-imports --disallow-untyped-defs --check-untyped-defs
 PACKAGE ?= mazegen
+SRC = maze_animate.py maze_format.py maze_pathfinding.py maze_visualize.py a_maze_ing.py
 
 .PHONY: install run debug clean lint lint-strict package
 
@@ -19,10 +20,10 @@ install:
 	pip install --force-reinstall mazegen-1.0.0-py3-none-any.whl
 
 run: install
-	. $(VENV_BIN)/activate && $(PYTHON) $(MAIN) config.txt
+	$(PYTHON) $(MAIN) config.txt -v
 
 debug: install
-	. $(VENV_BIN)/activate && $(PYTHON) -m pdb $(MAIN) config.txt
+	$(PYTHON) -m pdb $(MAIN) config.txt
 
 clean:
 	find . -type d -name "__pycache__" -prune -exec rm -rf {} +
@@ -31,17 +32,9 @@ clean:
 	find . -type f -name "*.pyc" -delete
 
 lint: install
-	. $(VENV_BIN)/activate && $(VENV_BIN)/flake8 .
-	. $(VENV_BIN)/activate && $(VENV_BIN)/mypy . $(MYPY_FLAGS)
+	$(VENV_BIN)/flake8 SRC
+	$(VENV_BIN)/mypy . $(MYPY_FLAGS)
 
 lint-strict: install
 	. $(VENV_BIN)/activate && $(VENV_BIN)/flake8 .
 	. $(VENV_BIN)/activate && $(VENV_BIN)/mypy . --strict
-
-package: install
-	@echo "Building mazegen package..."
-	. $(VENV_BIN)/activate && $(VENV_BIN)/pip install --upgrade build
-	. $(VENV_BIN)/activate && $(PYTHON) -m build
-	@echo "Copying wheel to repository root..."
-	@cp dist/$(PACKAGE)-*.whl . 2>/dev/null || true
-	@echo "Package built successfully! Files in dist/"
