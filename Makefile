@@ -1,7 +1,7 @@
 PYTHON ?= python3
 VENV ?= .venv
 VENV_BIN := $(VENV)/bin
-MAIN ?= main.py
+MAIN ?= a_maze_ing.py
 REQ ?= requirements.txt
 MYPY_FLAGS := --warn-return-any --warn-unused-ignores --ignore-missing-imports --disallow-untyped-defs --check-untyped-defs
 PACKAGE ?= mazegen
@@ -18,10 +18,10 @@ install:
 	fi
 
 run: install
-	. $(VENV_BIN)/activate && $(PYTHON) $(MAIN)
+	. $(VENV_BIN)/activate && $(PYTHON) $(MAIN) config.txt
 
 debug: install
-	. $(VENV_BIN)/activate && $(PYTHON) -m pdb $(MAIN)
+	. $(VENV_BIN)/activate && $(PYTHON) -m pdb $(MAIN) config.txt
 
 clean:
 	find . -type d -name "__pycache__" -prune -exec rm -rf {} +
@@ -38,5 +38,9 @@ lint-strict: install
 	. $(VENV_BIN)/activate && $(VENV_BIN)/mypy . --strict
 
 package: install
+	@echo "Building mazegen package..."
 	. $(VENV_BIN)/activate && $(VENV_BIN)/pip install --upgrade build
 	. $(VENV_BIN)/activate && $(PYTHON) -m build
+	@echo "Copying wheel to repository root..."
+	@cp dist/$(PACKAGE)-*.whl . 2>/dev/null || true
+	@echo "Package built successfully! Files in dist/"
