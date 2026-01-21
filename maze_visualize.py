@@ -85,6 +85,28 @@ def visualize(
                 if col == gen.width - 1:
                     grid[vr + 2][vc + 2] = "+"
 
+    start_row = ((gen.height - 5) // 2) * 2
+    start_col = ((gen.width - 7) // 2) * 2
+
+    pattern_42 = [
+        [1, 0, 0, 0, 0, 0, 0, 0, 1, 0, 1, 0, 1],  # Row 0
+        [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+        [1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1],  # Row 1
+        [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+        [1, 0, 1, 0, 1, 0, 0, 0, 1, 0, 1, 0, 1],  # Row 2
+        [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+        [0, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0, 0],  # Row 3
+        [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+        [0, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1, 0, 1],  # Row 4
+    ]
+
+    for i in range(9):
+        for j in range(13):
+            row = start_row + i
+            col = start_col + j
+            if pattern_42[i][j] == 1:  # Cell should be locked (fully walled)
+                grid[row + 1][col + 1] = chr(9608)
+
     pattern_cells = gen.get_42_pattern_cells()
     if pattern_42_color:
         for (r, c) in pattern_cells:

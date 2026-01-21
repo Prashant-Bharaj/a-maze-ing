@@ -99,10 +99,10 @@ class MazeGenerator:
             raise ValueError("Entry and exit must be different")
         
         if self.height < 5 or self.width < 7:
-            raise ValueError("Maze is too small to include the '42' pattern (minimum 7x5 required)")
+            raise ValueError("Maze is too small to include the '42' pattern (minimum 8x6 required)")
         
         if self.height == 5 or self.width == 7:
-            raise ValueError("The maze is too small. Not all cells are reachable.")
+            raise ValueError("The maze is too small. Not all cells are reachable (minimum 8x6 required).")
 
     def _create_42_pattern(self) -> bool:
         """

@@ -127,6 +127,8 @@ def animate_pathfinding(
     EXPLORED_COLOR = "\033[33m"  # Yellow
     FRONTIER_COLOR = "\033[36m"  # Cyan
     PATH_COLOR = "\033[32m"  # Green
+    FOURTY_TWO_COLOR = "\033[33M"  # Yellow
+
     
     entry_row, entry_col = gen.entry[1], gen.entry[0]
     exit_row, exit_col = gen.exit[1], gen.exit[0]
@@ -208,6 +210,30 @@ def animate_maze_with_path(
     vis_width = gen.width * 2 + 1
     vis_height = gen.height * 2 + 1
     grid = [[" " for _ in range(vis_width)] for _ in range(vis_height)]
+
+    start_row = ((gen.height - 5) // 2) * 2
+    start_col = ((gen.width - 7) // 2) * 2
+
+    pattern_42 = [
+        [1, 0, 0, 0, 0, 0, 0, 0, 1, 0, 1, 0, 1],  # Row 0
+        [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+        [1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1],  # Row 1
+        [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+        [1, 0, 1, 0, 1, 0, 0, 0, 1, 0, 1, 0, 1],  # Row 2
+        [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+        [0, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0, 0],  # Row 3
+        [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+        [0, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1, 0, 1],  # Row 4
+    ]
+    RESET = "\033[0m"
+    WALL_COLOR = "\033[34m" 
+    for i in range(9):
+        for j in range(13):
+            row = start_row + i
+            col = start_col + j
+            if pattern_42[i][j] == 1:  # Cell should be locked (fully walled)
+                grid[row + 1][col + 1] = f"{WALL_COLOR}{chr(9608)}{RESET}"
+
 
     for row in range(gen.height):
         for col in range(gen.width):
