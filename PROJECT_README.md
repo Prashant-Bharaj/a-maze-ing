@@ -11,7 +11,8 @@ A Python implementation of a configurable maze generator that creates perfect or
 - **Hexadecimal output format**: Efficient wall encoding using 4 bits per cell
 - **Reproducible results**: Optional seed parameter for deterministic generation
 - **Path finding**: Automatically computes shortest path from entry to exit
-- **Visual representation**: ASCII art visualization of the generated maze
+- **Visual representation**: ASCII art visualization (walls, entry S, exit E, optional path and colours)
+- **Interactive visual mode**: Regenerate maze, show/hide path, change wall/path/42 colours
 - **Robust error handling**: Comprehensive validation and clear error messages
 
 ## Installation
@@ -87,6 +88,28 @@ python3 a_maze_ing.py config_small.txt
 ```bash
 python3 a_maze_ing.py config_large.txt
 ```
+
+**Interactive visual mode** (regenerate, path, colours):
+```bash
+python3 a_maze_ing.py config.txt -v
+# or
+python3 a_maze_ing.py config.txt --visual
+```
+
+### Interactive Visual Mode
+
+With `-v` or `--visual`, after generating the maze the program enters an interactive loop. The maze is shown with coloured walls, entry (S), exit (E), and optionally the shortest path (`*`) and the "42" pattern.
+
+| Key | Action |
+|-----|--------|
+| **R** | Re-generate a new maze and write it to `OUTPUT_FILE` |
+| **P** | Show or hide the shortest path from entrance to exit |
+| **C** | Cycle wall colour (white, red, green, yellow, blue, magenta, cyan) |
+| **F** | Cycle "42" pattern colour (off, cyan, magenta, blue) |
+| **A** | Cycle path/accent colour (green, yellow, magenta, cyan) |
+| **Q** | Quit |
+
+Colours use ANSI escape codes and work in most terminals (including Windows 10+ with Windows Terminal or recent PowerShell).
 
 ## Output Format
 

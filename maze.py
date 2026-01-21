@@ -1,8 +1,11 @@
 #!/usr/bin/env python3
+"""
+Maze generation only. Pathfinding, output formatting, and visualization
+live in maze_pathfinding, maze_format, and maze_visualize.
+"""
 
 import random
-from typing import List, Tuple, Set, Dict, Optional
-from collections import deque
+from typing import Tuple, Set, Dict, Optional
 
 
 class MazeGenerator:
@@ -74,6 +77,7 @@ class MazeGenerator:
 
         self.locked_cells: Set[Tuple[int, int]] = set()
         self.visited: Set[Tuple[int, int]] = set()
+        self._pattern_42_cells: Set[Tuple[int, int]] = set()
 
         # Validate parameters
         self._validate_parameters()
@@ -103,27 +107,27 @@ class MazeGenerator:
         if self.width < 7 or self.height < 5:
             return False
 
-        # Pattern for '42' (cells that should be OPEN, rest are locked)
-        # 5 rows, 7 columns pattern
         pattern_42 = [
-            [0, 1, 1, 0, 1, 1, 1],  # Row 0
-            [1, 0, 1, 0, 0, 0, 1],  # Row 1
-            [0, 1, 1, 0, 1, 1, 0],  # Row 2
-            [1, 0, 0, 0, 1, 0, 0],  # Row 3
-            [1, 1, 1, 0, 1, 1, 1],  # Row 4
+            [1, 0, 0, 0, 1, 1, 1],  # Row 0
+            [1, 0, 0, 0, 0, 0, 1],  # Row 1
+            [1, 1, 1, 0, 1, 1, 1],  # Row 2
+            [0, 0, 1, 0, 1, 0, 0],  # Row 3
+            [0, 0, 1, 0, 1, 1, 1],  # Row 4
         ]
 
         # Center the pattern
         start_row = (self.height - 5) // 2
         start_col = (self.width - 7) // 2
 
-        # Lock cells that are NOT part of the '42' shape
+        # Lock cells that are NOT part of the '42' shape; track cells that ARE the '42'
         for i in range(5):
             for j in range(7):
                 row = start_row + i
                 col = start_col + j
                 if pattern_42[i][j] == 0:  # Cell should be locked (fully walled)
                     self.locked_cells.add((row, col))
+                else:  # Part of the '42' shape
+                    self._pattern_42_cells.add((row, col))
 
         return True
 
@@ -299,122 +303,6 @@ class MazeGenerator:
         if (exit_row, exit_col) in self.locked_cells:
             self.locked_cells.remove((exit_row, exit_col))
 
-    def find_shortest_path(self) -> List[str]:
-        """
-        Find the shortest path from entry to exit using BFS.
-        Returns a list of direction characters: N, E, S, W
-        """
-        entry_row, entry_col = self.entry[1], self.entry[0]
-        exit_row, exit_col = self.exit[1], self.exit[0]
-
-        queue = deque([(entry_row, entry_col, [])])
-        visited = {(entry_row, entry_col)}
-
-        while queue:
-            row, col, path = queue.popleft()
-
-            if row == exit_row and col == exit_col:
-                return path
-
-            # Check all four directions
-            for direction, (dr, dc) in self.DIRECTIONS.items():
-                # Check if wall is open in this direction
-                _, wall_mask, _ = self.OPPOSITE[direction]
-                if self.maze[(row, col)] & wall_mask:
-                    continue  # Wall is closed
-
-                new_row, new_col = row + dr, col + dc
-
-                if (
-                    self._is_valid_cell(new_row, new_col)
-                    and (new_row, new_col) not in visited
-                ):
-                    visited.add((new_row, new_col))
-                    queue.append((new_row, new_col, path + [direction]))
-
-        return []  # No path found
-
-    def to_hex_string(self) -> str:
-        """
-        Convert maze to hexadecimal string format.
-        Returns one hex digit per cell, rows separated by newlines.
-        """
-        lines = []
-        for row in range(self.height):
-            line = ""
-            for col in range(self.width):
-                hex_val = hex(self.maze[(row, col)])[2:].upper()
-                line += hex_val
-            lines.append(line)
-        return "\n".join(lines)
-
-    def to_output_format(self) -> str:
-        """
-        Generate complete output format including maze, coordinates, and path.
-        """
-        output = []
-
-        # Add hex maze
-        output.append(self.to_hex_string())
-        output.append("")  # Empty line
-
-        # Add entry coordinates (x, y format)
-        output.append(f"{self.entry[0]},{self.entry[1]}")
-
-        # Add exit coordinates
-        output.append(f"{self.exit[0]},{self.exit[1]}")
-
-        # Add shortest path
-        path = self.find_shortest_path()
-        output.append("".join(path))
-
-        return "\n".join(output) + "\n"
-
-    def visualize(self) -> str:
-        """
-        Create a visual ASCII representation of the maze.
-        """
-        # Each cell is represented by 3x3 characters
-        vis_width = self.width * 2 + 1
-        vis_height = self.height * 2 + 1
-        grid = [[" " for _ in range(vis_width)] for _ in range(vis_height)]
-
-        for row in range(self.height):
-            for col in range(self.width):
-                walls = self.maze[(row, col)]
-
-                # Top-left corner of this cell in visualization
-                vr = row * 2
-                vc = col * 2
-
-                # Always draw corners
-                grid[vr][vc] = "+"
-
-                # North wall
-                if walls & self.NORTH:
-                    grid[vr][vc + 1] = "-"
-
-                # West wall
-                if walls & self.WEST:
-                    grid[vr + 1][vc] = "|"
-
-                # Draw right and bottom borders for last column/row
-                if col == self.width - 1:
-                    grid[vr][vc + 2] = "+"
-                    if walls & self.EAST:
-                        grid[vr + 1][vc + 2] = "|"
-
-                if row == self.height - 1:
-                    grid[vr + 2][vc] = "+"
-                    if walls & self.SOUTH:
-                        grid[vr + 2][vc + 1] = "-"
-                    if col == self.width - 1:
-                        grid[vr + 2][vc + 2] = "+"
-
-        # Mark entry and exit
-        entry_row, entry_col = self.entry[1], self.entry[0]
-        exit_row, exit_col = self.exit[1], self.exit[0]
-        grid[entry_row * 2 + 1][entry_col * 2 + 1] = "S"
-        grid[exit_row * 2 + 1][exit_col * 2 + 1] = "E"
-
-        return "\n".join("".join(row) for row in grid)
+    def get_42_pattern_cells(self) -> Set[Tuple[int, int]]:
+        """Return the set of cell coordinates that form the '42' pattern."""
+        return getattr(self, "_pattern_42_cells", set())

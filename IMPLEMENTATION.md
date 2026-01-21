@@ -43,7 +43,10 @@ Complete implementation of a maze generator in Python that meets all requirement
 - [x] All lines end with \n
 
 ### 5. Additional Features
-- [x] Visual ASCII representation of maze
+- [x] Visual ASCII representation of maze (walls, S, E, path, optional 42 pattern)
+- [x] Coloured terminal visualization (ANSI) with configurable wall/path/entry/exit/42 colours
+- [x] Interactive visual mode: [R]egenerate, [P]ath show/hide, [C]olors, [F] 42, [A]ccent, [Q]uit
+- [x] Graphical display (MiniLibX/mlx window) via `-g`/`--graphical`; path and 42 pattern highlighted. Requires: `pip install ./mlx-2.2-py3-ubuntu-any.whl` (Ubuntu only; pygame not allowed on eval)
 - [x] BFS pathfinding for shortest path
 - [x] Validation against provided validator script
 - [x] Clear error messages for all failure cases
@@ -62,6 +65,7 @@ A-MAZE-ING/
 ├── config_invalid.txt      # Invalid config for testing
 ├── output_maze.txt         # Generated output
 ├── output_validator.py     # Provided validator
+├── maze_graphics.py        # MiniLibX (mlx) graphical viewer (-g/--graphical); Ubuntu only
 ├── test_maze.py            # Test suite
 ├── PROJECT_README.md       # Complete documentation
 └── IMPLEMENTATION.md       # This file
@@ -80,7 +84,8 @@ A-MAZE-ING/
 - `find_shortest_path()`: BFS to find optimal path
 - `to_hex_string()`: Convert to hex format
 - `to_output_format()`: Complete output with path
-- `visualize()`: ASCII art representation
+- `visualize(show_path, wall_color, path_color, ...)`: ASCII art, optional path/colours/42
+- `get_path_cells()`, `get_42_pattern_cells()`: for path and "42" overlay in visualization
 
 **Wall Encoding:**
 ```python
@@ -185,6 +190,9 @@ python3 a_maze_ing.py config_imperfect.txt
 
 # Validate output
 python3 output_validator.py output_maze.txt
+
+# Graphical display (Ubuntu: pip install ./mlx-2.2-py3-ubuntu-any.whl first)
+python3 a_maze_ing.py config.txt -g
 ```
 
 ## 💡 Key Design Decisions
@@ -226,8 +234,8 @@ python3 output_validator.py output_maze.txt
 - [ ] Additional algorithms (Prim's, Kruskal's)
 - [ ] Entry/exit on maze borders (edge cells)
 - [ ] Configurable '42' pattern position
-- [ ] Colored visualization
-- [ ] GUI interface
+- [x] Colored visualization (ANSI, interactive)
+- [x] Graphical display (MiniLibX/mlx window, `-g`/`--graphical`); Ubuntu only
 - [ ] Animation of generation process
 - [ ] Multiple output formats (PNG, SVG)
 
