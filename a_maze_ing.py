@@ -56,10 +56,6 @@ def run_visual_interactive(
     params: Dict[str, Any],
     generator: MazeGenerator,
 ) -> None:
-def run_visual_interactive(
-    params: Dict[str, Any],
-    generator: MazeGenerator,
-) -> None:
     """
     Run an interactive terminal visualisation of the maze.
     - [R]egenerate: create a new maze and write to OUTPUT_FILE.
@@ -396,11 +392,6 @@ def generate_maze_from_config(
         if animate:
             _clear_screen()
             animate_maze_with_path(
-                generator,
-                path,
-                draw_delay=0.05,
-                highlight_delay=0.08,
-                use_color=True,
                 generator,
                 path,
                 draw_delay=0.05,

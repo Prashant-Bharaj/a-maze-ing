@@ -7,7 +7,6 @@ pathfinding visualization.
 
 import time
 from typing import Dict, List, Set, Tuple, TYPE_CHECKING
-from typing import Dict, List, Set, Tuple, TYPE_CHECKING
 from collections import deque
 
 if TYPE_CHECKING:

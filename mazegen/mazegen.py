@@ -1,9 +1,3 @@
-#!/usr/bin/env python3
-"""
-Maze generation only. Pathfinding, output formatting, and visualization
-live in maze_pathfinding, maze_format, and maze_visualize.
-"""
-
 import random
 from typing import Tuple, Set, Dict, Optional
 
