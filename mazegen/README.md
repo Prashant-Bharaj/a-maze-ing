@@ -96,3 +96,37 @@ print(gen.get_solution_directions())  # Direction string
 # Check individual walls
 has_wall = gen.has_wall(0, 0, 'N')
 ```
+
+## Maze Generation Algorithm
+
+The maze is generated using the Recursive Backtracker algorithm, a randomized
+depth-first search (DFS) approach.
+
+### How it works
+
+The maze grid starts with all walls closed.
+
+A random starting cell is chosen.
+
+The algorithm visits unvisited neighboring cells, removing walls as it progresses.
+
+Backtracking occurs when no unvisited neighbors remain.
+
+Each cell is visited exactly once.
+
+### Why this algorithm was chosen
+
+Guarantees full connectivity of the maze
+
+Naturally produces perfect mazes (single path between any two cells)
+
+Simple, efficient, and easy to reason about
+
+Well suited for reproducibility using a random seed
+
+For non-perfect mazes, additional walls are removed after generation to introduce cycles and multiple paths.
+
+### Output Format
+
+The generated maze is written to the output file using one hexadecimal digit per cell.
+Each digit encodes which walls are closed (North, East, South, West).
