@@ -82,7 +82,7 @@ class MazeGenerator:
         # Validate parameters
         self._validate_parameters()
 
-    def _validate_parameters(self):
+    def _validate_parameters(self) -> None:
         """Validate maze parameters."""
         if self.width <= 0 or self.height <= 0:
             raise ValueError("Width and height must be positive")
@@ -100,12 +100,14 @@ class MazeGenerator:
 
         if self.height < 5 or self.width < 7:
             raise ValueError(
-                "Maze is too small to include the '42' pattern (minimum 8x6 required)"
+                "Maze is too small to include the '42' pattern "
+                "(minimum 8x6 required)"
             )
 
         if self.height == 5 or self.width == 7:
             raise ValueError(
-                "The maze is too small. Not all cells are reachable (minimum 8x6 required)."
+                "The maze is too small. Not all cells are reachable "
+                "(minimum 8x6 required)."
             )
 
     def _create_42_pattern(self) -> bool:
@@ -129,22 +131,25 @@ class MazeGenerator:
         start_row = (self.height - 5) // 2
         start_col = (self.width - 7) // 2
 
-        # Lock cells that are NOT part of the '42' shape; track cells that ARE the '42'
+        # Lock cells that are NOT part of the '42' shape;
+        # track cells that ARE the '42'
         for i in range(5):
             for j in range(7):
                 row = start_row + i
                 col = start_col + j
-                if pattern_42[i][j] == 1:  # Cell should be locked (fully walled)
+                # Cell should be locked (fully walled)
+                if pattern_42[i][j] == 1:
                     self.locked_cells.add((row, col))
 
         if self.entry[::-1] in self.locked_cells:
             raise ValueError(
-                "Invalid entry: the entry position is inside the locked “42” pattern."
+                "Invalid entry: the entry position is inside the locked "
+                '"42" pattern.'
             )
         if self.exit[::-1] in self.locked_cells:
-            raise ValueError(
-                "Invalid exit: exit position is inside the locked “42” pattern."
-            )
+            str = "Invalid exit: exit position is inside the locked "
+            str += '"42" pattern.'
+            raise ValueError(str)
 
         return True
 
@@ -172,7 +177,11 @@ class MazeGenerator:
 
         return (new_row, new_col)
 
-    def _generate_perfect_maze_dfs(self, start_row: int, start_col: int):
+    def _generate_perfect_maze_dfs(
+        self,
+        start_row: int,
+        start_col: int,
+    ) -> None:
         """Generate a perfect maze using recursive backtracking (DFS)."""
         stack = [(start_row, start_col)]
         self.visited.add((start_row, start_col))
@@ -231,7 +240,7 @@ class MazeGenerator:
 
         return False
 
-    def _add_extra_paths(self):
+    def _add_extra_paths(self) -> None:
         """Add extra passages for non-perfect mazes."""
         # Number of extra passages to add
         num_extra = max(1, (self.width * self.height) // 20)
@@ -280,7 +289,8 @@ class MazeGenerator:
     def generate(self) -> bool:
         """
         Generate the maze.
-        Returns True if successful, False if maze is too small for '42' pattern.
+        Returns True if successful, False if maze is too small for '42'
+        pattern.
         """
         # Create '42' pattern
         pattern_created = self._create_42_pattern()
@@ -303,7 +313,7 @@ class MazeGenerator:
 
         return pattern_created
 
-    def _ensure_entry_exit(self):
+    def _ensure_entry_exit(self) -> None:
         """Ensure entry and exit have proper wall configuration."""
         entry_row, entry_col = self.entry[1], self.entry[0]
         exit_row, exit_col = self.exit[1], self.exit[0]

@@ -27,7 +27,7 @@ def visualize(
     Args:
         gen: A MazeGenerator instance with a generated maze.
         path: Shortest path from find_shortest_path; used when
-        show_path is True.
+              show_path is True.
         show_path: If True, display the shortest path with a marker.
         wall_color: ANSI color name for walls (e.g. 'red', 'cyan').
         path_color: ANSI color name for path cells.
@@ -132,8 +132,9 @@ def visualize(
 
     lines: List[str] = []
     current = ""
-    for row in grid:
-        for ch in row:
+    for grid_row in grid:
+        for ch in grid_row:
+            d: str
             if ch in "+-|":
                 d = ansi(wc)
             elif ch == "S":

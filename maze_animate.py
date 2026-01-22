@@ -1,11 +1,12 @@
 #!/usr/bin/env python3
 """
 Animation module for maze drawing and algorithm solving visualization.
-Supports line-by-line maze drawing animation and step-by-step pathfinding
-visualization.
+Supports line-by-line maze drawing animation and step-by-step
+pathfinding visualization.
 """
 
 import time
+from typing import Dict, List, Set, Tuple, TYPE_CHECKING
 from typing import Dict, List, Set, Tuple, TYPE_CHECKING
 from collections import deque
 
@@ -118,11 +119,14 @@ def animate_pathfinding(
     Returns:
         List of direction characters representing the shortest path.
     """
-
     entry_row, entry_col = gen.entry[1], gen.entry[0]
     exit_row, exit_col = gen.exit[1], gen.exit[0]
 
-    queue: deque = deque([(entry_row, entry_col, [])])
+    queue: deque[Tuple[int, int, List[str]]] = deque(
+        [
+            (entry_row, entry_col, []),
+        ]
+    )
     visited: Set[Tuple[int, int]] = {(entry_row, entry_col)}
     exploration_order: List[Tuple[int, int]] = [(entry_row, entry_col)]
     parent: Dict[Tuple[int, int], Tuple[int, int]] = {}
@@ -165,6 +169,10 @@ def animate_pathfinding(
                     f"Explored: {step} cells | Queue size: {len(queue)}",
                     end="\r",
                 )
+                print(
+                    f"Explored: {step} cells | Queue size: {len(queue)}",
+                    end="\r",
+                )
             time.sleep(delay)
 
     print(f"\nExplored: {len(visited)} cells")
@@ -182,8 +190,8 @@ def animate_maze_with_path(
     use_color: bool = True,
 ) -> None:
     """
-    First animate drawing the maze, then animate highlighting
-    the solution path.
+    First animate drawing the maze, then animate highlighting the solution
+    path.
 
     Args:
         gen: A MazeGenerator instance with a generated maze.

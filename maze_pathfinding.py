@@ -21,7 +21,11 @@ def find_shortest_path(gen: "MazeGenerator") -> List[str]:
     entry_row, entry_col = gen.entry[1], gen.entry[0]
     exit_row, exit_col = gen.exit[1], gen.exit[0]
 
-    queue: deque = deque([(entry_row, entry_col, [])])
+    queue: deque[Tuple[int, int, List[str]]] = deque(
+        [
+            (entry_row, entry_col, []),
+        ]
+    )
     visited: Set[Tuple[int, int]] = {(entry_row, entry_col)}
 
     while queue:
