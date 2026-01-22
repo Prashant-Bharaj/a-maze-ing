@@ -1,4 +1,4 @@
-*This project has been created as part of the 42 curriculum by msantos2, prasingh.*
+*This project has been created as part of the 42 curriculum by prasingh, msantos2.*
 
 # A-MAZE-ING
 
@@ -19,18 +19,17 @@ pip install .
 from mazegen import MazeGenerator
 
 gen = MazeGenerator(width=8, height=6, seed=42)
-print(gen.to_hex_string())   #
->>>>>>> ba686fe (done)
- hex grid lines
-print(gen.solution_path)     # list of (row, col)
+print(gen.to_hex_string())
+hex grid lines
+print(gen.solution_path)     
 ```
 
 ## Build wheel / sdist
 ```bash
 source .venv/bin/activate
-pip install --upgrade build=======
+pip install --upgrade build
 python -m build
-ls dist  # contains mazegen-<version>-py3-none-any.whl and .tar.gz
+ls dist
 ```
 
 ## Format details
@@ -94,11 +93,18 @@ Once `mypy` and `flake8` are installed, you can execute using
 make lint
 ```
 Execute the commands `flake8` and `mypy` --strict
- ```bashMypy requires `Python 3.9` or later to run. You can install `mypy` using `pip`:
-
+```bash
 make lint-strict
 ```
 
+#### Resources
 
-## Resources
->>>>>>> ba686fe (done)
+For the creation of virtual environment:[link](https://docs.python.org/3/library/venv.html)
+For the study of the python modules:[link](https://docs.python.org/3/tutorial/modules.html)
+For git conflict resolution:[link](https://stackoverflow.com/questions/51274430/change-from-master-to-a-new-default-branch-git)
+
+### AI Usage:
+* AI is used for the understanding the problem, and specifics
+* Creating the requirements list for the project
+* Writing custom test scripts for the verification of implementation
+* Brainstorming the approach for the animation and visualize 
