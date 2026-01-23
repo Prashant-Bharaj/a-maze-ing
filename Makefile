@@ -12,23 +12,23 @@ SRC = maze_animate.py maze_format.py maze_pathfinding.py maze_visualize.py a_maz
 .PHONY: run debug clean lint lint-strict
 
 $(VENV_PY):
-	$(PYTHON) -m venv $(VENV)
+	$(VENV_BIN)/$(PYTHON) -m venv $(VENV)
 	$(VENV_PIP) install --upgrade pip
 	@if [ -f $(REQ) ]; then \
 		$(VENV_PIP) install -r $(REQ); \
 	else \
 		echo "No $(REQ) found; skipping dependency install"; \
 	fi
-	$(VENV_PIP) install --upgrade mazegen-1.0.0-py3-none-any.whl
+	$(VENV_PIP) install --force-reinstall mazegen-1.0.0-py3-none-any.whl
 
 install: $(VENV_PY)
 	@echo "Environment ready."
 
 run: install
-	$(PYTHON) $(MAIN) config.txt -v
+	$(VENV_BIN)/$(PYTHON) $(MAIN) config.txt -v
 
 debug: install
-	$(PYTHON) -m pdb $(MAIN) config.txt
+	$(VENV_BIN)/$(PYTHON) -m pdb $(MAIN) config.txt
 
 clean:
 	rm -rf $(VENV)
