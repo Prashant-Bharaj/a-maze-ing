@@ -18,5 +18,8 @@ PERFECT=False
 # Optional: Random seed for reproducibility
 SEED=6789
 
-# Optional: Algorithm choice (dfs, kruskal, prim)
+# Maze generation algorithm (dfs, kruskal, prim)
 ALGORITHM=prim
+
+# Pathfinding algorithm (bfs, dfs, astar)
+PATHFINDING_ALGORITHM=dfs

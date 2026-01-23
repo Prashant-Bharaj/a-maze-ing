@@ -311,7 +311,7 @@ def validate_and_convert_config(config: Dict[str, Any]) -> Dict[str, Any]:
         seed_value: Any = None
         validated["seed"] = seed_value
 
-    # Optional: ALGORITHM
+    
     if "ALGORITHM" in config:
         algo_value: Any = config["ALGORITHM"].lower()
         validated["algorithm"] = algo_value
