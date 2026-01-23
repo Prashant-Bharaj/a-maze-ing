@@ -12,7 +12,7 @@ SRC = maze_animate.py maze_format.py maze_pathfinding.py maze_visualize.py a_maz
 .PHONY: run debug clean lint lint-strict
 
 $(VENV_PY):
-	$(VENV_BIN)/$(PYTHON) -m venv $(VENV)
+	$(PYTHON) -m venv $(VENV)
 	$(VENV_PIP) install --upgrade pip
 	@if [ -f $(REQ) ]; then \
 		$(VENV_PIP) install -r $(REQ); \
