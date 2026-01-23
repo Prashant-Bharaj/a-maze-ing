@@ -16,10 +16,7 @@ OUTPUT_FILE=output_maze.txt
 PERFECT=False
 
 # Optional: Random seed for reproducibility or remove if not needed
-
+SEED=23534
 
 # Maze generation algorithm (dfs, kruskal, prim)
-ALGORITHM=prim
-
-# Pathfinding algorithm (bfs, dfs, astar)
-PATHFINDING_ALGORITHM=astar
+ALGORITHM=dfs

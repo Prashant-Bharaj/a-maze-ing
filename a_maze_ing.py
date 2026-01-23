@@ -93,9 +93,7 @@ def run_visual_interactive(
     pattern_42_color = "white"
 
     _enable_windows_ansi()
-    path = find_shortest_path(
-        generator, algorithm=params["pathfinding_algorithm"]
-    )
+    path = find_shortest_path(generator)
 
     while True:
         _clear_screen()
@@ -134,9 +132,7 @@ def run_visual_interactive(
                 seed=params["seed"],
             )
             gen.generate()
-            path = find_shortest_path(
-                gen, algorithm=params["pathfinding_algorithm"]
-            )
+            path = find_shortest_path(gen)
             if not path:
                 gen = MazeGenerator(
                     width=params["width"],
@@ -148,9 +144,7 @@ def run_visual_interactive(
                     seed=params["seed"],
                 )
                 gen.generate()
-                path = find_shortest_path(
-                    gen, algorithm=params["pathfinding_algorithm"]
-                )
+                path = find_shortest_path(gen)
             if path:
                 generator = gen
                 with open(params["output_file"], "w") as f:
@@ -326,15 +320,6 @@ def validate_and_convert_config(config: Dict[str, Any]) -> Dict[str, Any]:
         raise ValueError(f"Invalid ALGORITHM value: {gen_algo} (allowed: {allowed})")
     validated["algorithm"] = gen_algo
 
-    path_algo = config.get("PATHFINDING_ALGORITHM", "bfs").strip().lower()
-    allowed_path_algos = {"bfs", "dfs", "astar"}
-    if path_algo not in allowed_path_algos:
-        allowed = ", ".join(sorted(allowed_path_algos))
-        raise ValueError(
-            f"Invalid PATHFINDING_ALGORITHM value: {path_algo} (allowed: {allowed})"
-        )
-    validated["pathfinding_algorithm"] = path_algo
-
     return validated
 
 
@@ -379,12 +364,6 @@ def generate_maze_from_config(
         generator.generate()
 
         if animate_algo:
-            if params["pathfinding_algorithm"] != "bfs":
-                print(
-                    "Note: --animate-algo currently visualizes BFS only; "
-                    "using BFS for animation.",
-                    file=sys.stderr,
-                )
             print("\n" + "=" * 50)
             path = animate_pathfinding(
                 generator,
@@ -393,9 +372,7 @@ def generate_maze_from_config(
             )
             print("=" * 50)
         else:
-            path = find_shortest_path(
-                generator, algorithm=params["pathfinding_algorithm"]
-            )
+            path = find_shortest_path(generator)
 
         if not path:
             print("ERROR: No path exists between entry and exit!")
