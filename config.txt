@@ -2,12 +2,12 @@
 # Lines starting with # are comments
 
 # Maze dimensions
-WIDTH=15
+WIDTH=30
 HEIGHT=16
 
 # Entry and exit coordinates (x,y format)
 ENTRY=0,1
-EXIT=6,5
+EXIT=28,15
 
 # Output file for the generated maze
 OUTPUT_FILE=output_maze.txt
@@ -16,7 +16,7 @@ OUTPUT_FILE=output_maze.txt
 PERFECT=False
 
 # Optional: Random seed for reproducibility or remove if not needed
-SEED=123
+
 
 # Maze generation algorithm (dfs, kruskal, prim)
 ALGORITHM=prim

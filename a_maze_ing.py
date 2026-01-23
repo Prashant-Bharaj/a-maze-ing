@@ -93,7 +93,9 @@ def run_visual_interactive(
     pattern_42_color = "white"
 
     _enable_windows_ansi()
-    path = find_shortest_path(generator)
+    path = find_shortest_path(
+        generator, algorithm=params["pathfinding_algorithm"]
+    )
 
     while True:
         _clear_screen()
@@ -128,10 +130,13 @@ def run_visual_interactive(
                 entry=params["entry"],
                 exit=params["exit"],
                 perfect=params["perfect"],
+                algorithm=params["algorithm"],
                 seed=params["seed"],
             )
             gen.generate()
-            path = find_shortest_path(gen)
+            path = find_shortest_path(
+                gen, algorithm=params["pathfinding_algorithm"]
+            )
             if not path:
                 gen = MazeGenerator(
                     width=params["width"],
@@ -139,10 +144,13 @@ def run_visual_interactive(
                     entry=params["entry"],
                     exit=params["exit"],
                     perfect=params["perfect"],
+                    algorithm=params["algorithm"],
                     seed=params["seed"],
                 )
                 gen.generate()
-                path = find_shortest_path(gen)
+                path = find_shortest_path(
+                    gen, algorithm=params["pathfinding_algorithm"]
+                )
             if path:
                 generator = gen
                 with open(params["output_file"], "w") as f:
@@ -311,12 +319,21 @@ def validate_and_convert_config(config: Dict[str, Any]) -> Dict[str, Any]:
         validated["seed"] = seed_value
 
     
-    if "ALGORITHM" in config:
-        algo_value: Any = config["ALGORITHM"].lower()
-        validated["algorithm"] = algo_value
-    else:
-        default_algo: Any = "dfs"
-        validated["algorithm"] = default_algo
+    gen_algo = config.get("ALGORITHM", "dfs").strip().lower()
+    allowed_gen_algos = {"dfs", "kruskal", "prim"}
+    if gen_algo not in allowed_gen_algos:
+        allowed = ", ".join(sorted(allowed_gen_algos))
+        raise ValueError(f"Invalid ALGORITHM value: {gen_algo} (allowed: {allowed})")
+    validated["algorithm"] = gen_algo
+
+    path_algo = config.get("PATHFINDING_ALGORITHM", "bfs").strip().lower()
+    allowed_path_algos = {"bfs", "dfs", "astar"}
+    if path_algo not in allowed_path_algos:
+        allowed = ", ".join(sorted(allowed_path_algos))
+        raise ValueError(
+            f"Invalid PATHFINDING_ALGORITHM value: {path_algo} (allowed: {allowed})"
+        )
+    validated["pathfinding_algorithm"] = path_algo
 
     return validated
 
@@ -355,14 +372,19 @@ def generate_maze_from_config(
             entry=params["entry"],
             exit=params["exit"],
             perfect=params["perfect"],
+            algorithm=params["algorithm"],
             seed=params["seed"],
         )
 
-        # Generate the maze
-        generator.generate()
         generator.generate()
 
         if animate_algo:
+            if params["pathfinding_algorithm"] != "bfs":
+                print(
+                    "Note: --animate-algo currently visualizes BFS only; "
+                    "using BFS for animation.",
+                    file=sys.stderr,
+                )
             print("\n" + "=" * 50)
             path = animate_pathfinding(
                 generator,
@@ -371,7 +393,9 @@ def generate_maze_from_config(
             )
             print("=" * 50)
         else:
-            path = find_shortest_path(generator)
+            path = find_shortest_path(
+                generator, algorithm=params["pathfinding_algorithm"]
+            )
 
         if not path:
             print("ERROR: No path exists between entry and exit!")
