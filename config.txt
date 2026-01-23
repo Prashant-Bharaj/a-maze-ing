@@ -15,11 +15,11 @@ OUTPUT_FILE=output_maze.txt
 # Perfect maze flag (True = single path, False = multiple paths)
 PERFECT=False
 
-# Optional: Random seed for reproducibility
-SEED=6789
+# Optional: Random seed for reproducibility or remove if not needed
+SEED=123
 
 # Maze generation algorithm (dfs, kruskal, prim)
 ALGORITHM=prim
 
 # Pathfinding algorithm (bfs, dfs, astar)
-PATHFINDING_ALGORITHM=dfs
+PATHFINDING_ALGORITHM=astar
