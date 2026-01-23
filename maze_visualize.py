@@ -129,6 +129,7 @@ def visualize(
     pc = path_color or "green"
     ec_in = entry_color or "yellow"
     ec_out = exit_color or "yellow"
+    pc_42 = pattern_42_color or "blue"
 
     lines: List[str] = []
     current = ""
@@ -143,8 +144,8 @@ def visualize(
                 d = ansi(ec_out)
             elif ch == "*":
                 d = ansi(pc)
-            elif ch == "\u2591":
-                d = ansi(pattern_42_color)
+            elif ch == chr(9608):
+                d = ansi(pc_42)
             else:
                 d = DEFAULT
             if d != current:

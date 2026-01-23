@@ -74,7 +74,8 @@ def run_visual_interactive(
         "magenta",
         "cyan",
     ]
-    WALL_COLORS = [
+    PATH_COLORS = ["green", "yellow", "magenta", "cyan"]
+    PATTERN_42_COLOR = [
         "white",
         "red",
         "green",
@@ -83,15 +84,13 @@ def run_visual_interactive(
         "magenta",
         "cyan",
     ]
-    PATH_COLORS = ["green", "yellow", "magenta", "cyan"]
-    PATTERN_42_OPTS: List[Any] = [None, "cyan", "magenta", "blue"]
 
     show_path = True
     wall_color = "white"
     path_color = "green"
     entry_color = "yellow"
     exit_color = "yellow"
-    pattern_42_color: Any = None
+    pattern_42_color = "white"
 
     _enable_windows_ansi()
     path = find_shortest_path(generator)
@@ -156,7 +155,7 @@ def run_visual_interactive(
         elif cmd == "c":
             wall_color = _next_item(WALL_COLORS, wall_color)
         elif cmd == "f":
-            pattern_42_color = _next_item(PATTERN_42_OPTS, pattern_42_color)
+            pattern_42_color = _next_item(PATTERN_42_COLOR, pattern_42_color)
         elif cmd == "a":
             path_color = _next_item(PATH_COLORS, path_color)
 
