@@ -312,12 +312,12 @@ def validate_and_convert_config(config: Dict[str, Any]) -> Dict[str, Any]:
         seed_value: Any = None
         validated["seed"] = seed_value
 
-    
     gen_algo = config.get("ALGORITHM", "dfs").strip().lower()
     allowed_gen_algos = {"dfs", "kruskal", "prim"}
     if gen_algo not in allowed_gen_algos:
         allowed = ", ".join(sorted(allowed_gen_algos))
-        raise ValueError(f"Invalid ALGORITHM value: {gen_algo} (allowed: {allowed})")
+        err_str = f"Invalid ALGORITHM value: {gen_algo} (allowed: {allowed})"
+        raise ValueError(err_str)
     validated["algorithm"] = gen_algo
 
     return validated

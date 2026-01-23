@@ -37,4 +37,4 @@ lint: install
 
 lint-strict: install
 	$(VENV_BIN)/flake8 $(SRC)
-	$(VENV_BIN)/mypy $(SRC) --strict
+	$(VENV_BIN)/mypy $(SRC) $(MYPY_FLAGS) --strict
