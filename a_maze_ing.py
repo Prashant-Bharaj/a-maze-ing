@@ -128,7 +128,7 @@ def run_visual_interactive(
                 entry=params["entry"],
                 exit=params["exit"],
                 perfect=params["perfect"],
-                seed=None,
+                seed=params["seed"],
             )
             gen.generate()
             path = find_shortest_path(gen)
@@ -139,7 +139,7 @@ def run_visual_interactive(
                     entry=params["entry"],
                     exit=params["exit"],
                     perfect=params["perfect"],
-                    seed=None,
+                    seed=params["seed"],
                 )
                 gen.generate()
                 path = find_shortest_path(gen)
