@@ -4,7 +4,7 @@
 from typing import List, TYPE_CHECKING
 
 if TYPE_CHECKING:
-    from maze import MazeGenerator
+    from mazegen import MazeGenerator
 
 
 def to_hex_string(gen: "MazeGenerator") -> str:

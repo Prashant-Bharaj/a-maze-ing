@@ -1,18 +1,24 @@
 #!/usr/bin/env python3
 """
 A-MAZE-ING Maze Generator
-Generates a maze from a configuration file and outputs it in hexadecimal format.
-Supports interactive visual mode with: regenerate, show/hide path, wall/path/42 colors.
+Generates a maze from a configuration file and outputs it in
+hexadecimal format. Supports interactive visual mode with: regenerate,
+show/hide path, wall/path/42 colors.
 """
 
 import sys
 import os
-from typing import Dict, Any
+import time
+from typing import Dict, Any, Tuple, List
 
-from maze import MazeGenerator
+from mazegen import MazeGenerator
 from maze_pathfinding import find_shortest_path
 from maze_format import to_output_format
 from maze_visualize import visualize
+from maze_animate import (
+    animate_pathfinding,
+    animate_maze_with_path,
+)
 
 
 def _enable_windows_ansi() -> None:
@@ -22,9 +28,12 @@ def _enable_windows_ansi() -> None:
     try:
         import ctypes
 
-        kernel32 = ctypes.windll.kernel32  # type: ignore[attr-defined]
+        kernel32 = ctypes.windll.kernel32
         handle = kernel32.GetStdHandle(-11)  # STD_OUTPUT_HANDLE
-        kernel32.SetConsoleMode(handle, 7)  # ENABLE_VT + ENABLE_PROCESSED_OUTPUT etc.
+        # ENABLE_VT + ENABLE_PROCESSED_OUTPUT etc.
+        kernel32.SetConsoleMode(handle, 7)
+        # ENABLE_VT + ENABLE_PROCESSED_OUTPUT etc.
+        kernel32.SetConsoleMode(handle, 7)
     except Exception:
         pass
 
@@ -34,8 +43,8 @@ def _clear_screen() -> None:
     print("\033[2J\033[H", end="", flush=True)
 
 
-def _next_item(options: list, current: Any) -> Any:
-    """Cycle to the next item in options; if current not in list, return first."""
+def _next_item(options: List[Any], current: Any) -> Any:
+    """Cycle to the next item in options; return first if not in list."""
     try:
         i = options.index(current)
         return options[(i + 1) % len(options)]
@@ -43,7 +52,10 @@ def _next_item(options: list, current: Any) -> Any:
         return options[0]
 
 
-def run_visual_interactive(params: Dict[str, Any], generator: MazeGenerator) -> None:
+def run_visual_interactive(
+    params: Dict[str, Any],
+    generator: MazeGenerator,
+) -> None:
     """
     Run an interactive terminal visualisation of the maze.
     - [R]egenerate: create a new maze and write to OUTPUT_FILE.
@@ -53,16 +65,32 @@ def run_visual_interactive(params: Dict[str, Any], generator: MazeGenerator) -> 
     - [A]ccent: cycle path/accent colour.
     - [Q]uit: exit.
     """
-    WALL_COLORS = ["white", "red", "green", "yellow", "blue", "magenta", "cyan"]
+    WALL_COLORS = [
+        "white",
+        "red",
+        "green",
+        "yellow",
+        "blue",
+        "magenta",
+        "cyan",
+    ]
     PATH_COLORS = ["green", "yellow", "magenta", "cyan"]
-    PATTERN_42_OPTS: list = [None, "cyan", "magenta", "blue"]
+    PATTERN_42_COLOR = [
+        "white",
+        "red",
+        "green",
+        "yellow",
+        "blue",
+        "magenta",
+        "cyan",
+    ]
 
     show_path = True
     wall_color = "white"
     path_color = "green"
     entry_color = "yellow"
     exit_color = "yellow"
-    pattern_42_color: Any = None
+    pattern_42_color = "white"
 
     _enable_windows_ansi()
     path = find_shortest_path(generator)
@@ -100,7 +128,8 @@ def run_visual_interactive(params: Dict[str, Any], generator: MazeGenerator) -> 
                 entry=params["entry"],
                 exit=params["exit"],
                 perfect=params["perfect"],
-                seed=None,
+                algorithm=params["algorithm"],
+                seed=params["seed"],
             )
             gen.generate()
             path = find_shortest_path(gen)
@@ -111,7 +140,8 @@ def run_visual_interactive(params: Dict[str, Any], generator: MazeGenerator) -> 
                     entry=params["entry"],
                     exit=params["exit"],
                     perfect=params["perfect"],
-                    seed=None,
+                    algorithm=params["algorithm"],
+                    seed=params["seed"],
                 )
                 gen.generate()
                 path = find_shortest_path(gen)
@@ -127,7 +157,7 @@ def run_visual_interactive(params: Dict[str, Any], generator: MazeGenerator) -> 
         elif cmd == "c":
             wall_color = _next_item(WALL_COLORS, wall_color)
         elif cmd == "f":
-            pattern_42_color = _next_item(PATTERN_42_OPTS, pattern_42_color)
+            pattern_42_color = _next_item(PATTERN_42_COLOR, pattern_42_color)
         elif cmd == "a":
             path_color = _next_item(PATH_COLORS, path_color)
 
@@ -135,213 +165,254 @@ def run_visual_interactive(params: Dict[str, Any], generator: MazeGenerator) -> 
 def parse_config_file(filename: str) -> Dict[str, Any]:
     """
     Parse the configuration file and extract maze parameters.
-    
+
     Args:
         filename: Path to the configuration file
-        
+
     Returns:
         Dictionary with configuration parameters
-        
+
     Raises:
         FileNotFoundError: If config file doesn't exist
         ValueError: If configuration is invalid
     """
     if not os.path.exists(filename):
         raise FileNotFoundError(f"Configuration file '{filename}' not found")
-    
+
     config = {}
-    
+
     try:
-        with open(filename, 'r') as f:
+        with open(filename, "r") as f:
             line_num = 0
             for line in f:
                 line_num += 1
                 # Remove whitespace and skip comments/empty lines
                 line = line.strip()
-                if not line or line.startswith('#'):
+                if not line or line.startswith("#"):
                     continue
-                
+
                 # Parse KEY=VALUE format
-                if '=' not in line:
-                    raise ValueError(f"Line {line_num}: Invalid format (expected KEY=VALUE)")
-                
-                key, value = line.split('=', 1)
+                if "=" not in line:
+                    raise ValueError(
+                        f"Line {line_num}: Invalid format (expected KEY=VALUE)"
+                    )
+
+                key, value = line.split("=", 1)
                 key = key.strip()
                 value = value.strip()
-                
+
                 if not key or not value:
                     raise ValueError(f"Line {line_num}: Empty key or value")
-                
+
                 config[key] = value
-    
+
     except IOError as e:
         raise IOError(f"Error reading configuration file: {e}")
-    
+
     return config
 
 
 def validate_and_convert_config(config: Dict[str, Any]) -> Dict[str, Any]:
     """
     Validate configuration and convert values to appropriate types.
-    
+
     Args:
         config: Raw configuration dictionary
-        
+
     Returns:
         Validated and converted configuration
-        
+
     Raises:
         ValueError: If configuration is invalid
     """
     # Check mandatory keys
-    mandatory_keys = ['WIDTH', 'HEIGHT', 'ENTRY', 'EXIT', 'OUTPUT_FILE', 'PERFECT']
+    mandatory_keys = [
+        "WIDTH",
+        "HEIGHT",
+        "ENTRY",
+        "EXIT",
+        "OUTPUT_FILE",
+        "PERFECT",
+    ]
+    mandatory_keys = [
+        "WIDTH",
+        "HEIGHT",
+        "ENTRY",
+        "EXIT",
+        "OUTPUT_FILE",
+        "PERFECT",
+    ]
     missing_keys = [key for key in mandatory_keys if key not in config]
-    
+
     if missing_keys:
-        raise ValueError(f"Missing mandatory configuration keys: {', '.join(missing_keys)}")
-    
-    validated = {}
-    
+        missing = ", ".join(missing_keys)
+        raise ValueError(f"Missing mandatory configuration keys: {missing}")
+
+    validated: Dict[str, Any] = {}
+
     # Parse WIDTH
     try:
-        validated['width'] = int(config['WIDTH'])
-        if validated['width'] <= 0:
+        width_val = int(config["WIDTH"])
+        if width_val <= 0:
             raise ValueError("WIDTH must be positive")
+        validated["width"] = width_val
     except ValueError as e:
         raise ValueError(f"Invalid WIDTH value: {e}")
-    
+
     # Parse HEIGHT
     try:
-        validated['height'] = int(config['HEIGHT'])
-        if validated['height'] <= 0:
+        height_val = int(config["HEIGHT"])
+        if height_val <= 0:
             raise ValueError("HEIGHT must be positive")
+        validated["height"] = height_val
     except ValueError as e:
         raise ValueError(f"Invalid HEIGHT value: {e}")
-    
+
     # Parse ENTRY (x,y format)
     try:
-        entry_parts = config['ENTRY'].split(',')
+        entry_parts = config["ENTRY"].split(",")
         if len(entry_parts) != 2:
             raise ValueError("ENTRY must be in format x,y")
-        validated['entry'] = (int(entry_parts[0]), int(entry_parts[1]))
+        entry_val: Tuple[int, int] = (int(entry_parts[0]), int(entry_parts[1]))
+        validated["entry"] = entry_val
     except ValueError as e:
         raise ValueError(f"Invalid ENTRY value: {e}")
-    
+
     # Parse EXIT (x,y format)
     try:
-        exit_parts = config['EXIT'].split(',')
+        exit_parts = config["EXIT"].split(",")
         if len(exit_parts) != 2:
             raise ValueError("EXIT must be in format x,y")
-        validated['exit'] = (int(exit_parts[0]), int(exit_parts[1]))
+        exit_val: Tuple[int, int] = (int(exit_parts[0]), int(exit_parts[1]))
+        validated["exit"] = exit_val
     except ValueError as e:
         raise ValueError(f"Invalid EXIT value: {e}")
-    
+
     # Parse PERFECT
-    perfect_value = config['PERFECT'].lower()
-    if perfect_value in ['true', '1', 'yes']:
-        validated['perfect'] = True
-    elif perfect_value in ['false', '0', 'no']:
-        validated['perfect'] = False
+    perfect_value = config["PERFECT"].lower()
+    if perfect_value in ["true", "1", "yes"]:
+        validated["perfect"] = True
+    elif perfect_value in ["false", "0", "no"]:
+        validated["perfect"] = False
     else:
-        raise ValueError(f"Invalid PERFECT value: {config['PERFECT']} (expected True/False)")
-    
+        raise ValueError(
+            f"Invalid PERFECT value: {config['PERFECT']} (expected True/False)"
+        )
+
     # OUTPUT_FILE
-    validated['output_file'] = config['OUTPUT_FILE']
-    
+    validated["output_file"] = config["OUTPUT_FILE"]
+
     # Optional: SEED
-    if 'SEED' in config:
+    if "SEED" in config:
         try:
-            validated['seed'] = int(config['SEED'])
+            validated["seed"] = int(config["SEED"])
         except ValueError:
             raise ValueError(f"Invalid SEED value: {config['SEED']}")
     else:
-        validated['seed'] = None
-    
-    # Optional: ALGORITHM
-    if 'ALGORITHM' in config:
-        validated['algorithm'] = config['ALGORITHM'].lower()
-    else:
-        validated['algorithm'] = 'dfs'
-    
+        seed_value: Any = None
+        validated["seed"] = seed_value
+
+    gen_algo = config.get("ALGORITHM", "dfs").strip().lower()
+    allowed_gen_algos = {"dfs", "kruskal", "prim"}
+    if gen_algo not in allowed_gen_algos:
+        allowed = ", ".join(sorted(allowed_gen_algos))
+        err_str = f"Invalid ALGORITHM value: {gen_algo} (allowed: {allowed})"
+        raise ValueError(err_str)
+    validated["algorithm"] = gen_algo
+
     return validated
 
 
 def generate_maze_from_config(
-    config_file: str, visual: bool = False, graphical: bool = False
+    config_file: str,
+    visual: bool = False,
+    animate: bool = False,
+    animate_algo: bool = False,
 ) -> None:
     """
     Main function to generate a maze from a configuration file.
 
     Args:
         config_file: Path to the configuration file
-        visual: If True, run interactive terminal visual mode after generating.
-        graphical: If True, open a MiniLibX (mlx) window with the maze. Requires mlx on Ubuntu: pip install ./mlx-2.2-py3-ubuntu-any.whl
+        visual: If True, run interactive terminal visual mode after
+                generating.
+        animate: If True, animate maze drawing line by line.
+        animate_algo: If True, animate the pathfinding algorithm solving
+                      the maze.
     """
     try:
         # Parse configuration
         print(f"Reading configuration from '{config_file}'...")
         config = parse_config_file(config_file)
-        
+
         # Validate and convert configuration
         print("Validating configuration...")
         params = validate_and_convert_config(config)
-        
+
         # Create maze generator
         print(f"Generating {params['width']}x{params['height']} maze...")
         generator = MazeGenerator(
-            width=params['width'],
-            height=params['height'],
-            entry=params['entry'],
-            exit=params['exit'],
-            perfect=params['perfect'],
-            seed=params['seed']
+            width=params["width"],
+            height=params["height"],
+            entry=params["entry"],
+            exit=params["exit"],
+            perfect=params["perfect"],
+            algorithm=params["algorithm"],
+            seed=params["seed"],
         )
-        
-        # Generate the maze
-        pattern_created = generator.generate()
-        
-        if not pattern_created:
-            print("WARNING: Maze is too small to include the '42' pattern (minimum 7x5 required)")
-        
-        path = find_shortest_path(generator)
+
+        generator.generate()
+
+        if animate_algo:
+            print("\n" + "=" * 50)
+            path = animate_pathfinding(
+                generator,
+                delay=0.08,
+                use_color=True,
+            )
+            print("=" * 50)
+        else:
+            path = find_shortest_path(generator)
+
         if not path:
             print("ERROR: No path exists between entry and exit!")
             sys.exit(1)
 
-        print(f"Maze generated successfully!")
+        print("Maze generated successfully!")
+        print("Maze generated successfully!")
         print(f"Shortest path length: {len(path)} steps")
 
-        output_file = params['output_file']
+        output_file = params["output_file"]
         print(f"Writing maze to '{output_file}'...")
-        with open(output_file, 'w') as f:
+        with open(output_file, "w") as f:
             f.write(to_output_format(generator, path))
         print(f"Maze written successfully to '{output_file}'")
 
-        if not visual:
+        # Animation: maze drawing + path tracing
+        if animate:
+            _clear_screen()
+            animate_maze_with_path(
+                generator,
+                path,
+                draw_delay=0.05,
+                highlight_delay=0.08,
+                use_color=True,
+            )
+            print(f"\nEntry: {params['entry']}")
+            print(f"Exit: {params['exit']}")
+            print(f"Path: {''.join(path)}")
+            time.sleep(2)
+        elif not visual:
             print("\nVisual representation:")
             print(visualize(generator, path))
 
-        print(f"\nEntry: {params['entry']}")
-        print(f"Exit: {params['exit']}")
-        print(f"Path: {''.join(path)}")
-
-        if graphical:
-            try:
-                from maze_graphics import run_graphics
-
-                print("\nOpening graphical display (close window or press ESC/Q to exit)...")
-                run_graphics(generator, path, show_path=True, show_42=True)
-            except ImportError:
-                print(
-                    "Graphics (mlx) not available. On Ubuntu: pip install ./mlx-2.2-py3-ubuntu-any.whl",
-                    file=sys.stderr,
-                )
-            except RuntimeError as e:
-                print(f"Graphics unavailable: {e}", file=sys.stderr)
-                print(
-                    "On Ubuntu: pip install ./mlx-2.2-py3-ubuntu-any.whl",
-                    file=sys.stderr,
-                )
+            print(f"\nEntry: {params['entry']}")
+            print(f"Exit: {params['exit']}")
+            print(f"Path: {''.join(path)}")
+        else:
+            print(f"\nEntry: {params['entry']}")
+            print(f"Exit: {params['exit']}")
+            print(f"Path: {''.join(path)}")
 
         if visual:
             print("\nStarting interactive visual mode...")
@@ -361,27 +432,65 @@ def generate_maze_from_config(
         sys.exit(1)
 
 
-def main():
+def main() -> None:
     """Main entry point for the program."""
     if len(sys.argv) < 2:
-        print("Usage: python3 a_maze_ing.py config.txt [-v|--visual] [-g|--graphical]", file=sys.stderr)
+        print(
+            "Usage: python3 a_maze_ing.py config.txt [OPTIONS]",
+            file=sys.stderr,
+        )
         print("\nGenerates a maze from a configuration file.", file=sys.stderr)
-        print("  -v, --visual     Run interactive terminal visual mode.", file=sys.stderr)
-        print("  -g, --graphical  Open a graphical (MiniLibX/mlx) window of the maze.", file=sys.stderr)
+        print("Options:", file=sys.stderr)
+        print(
+            "  -v, --visual         Run interactive terminal visual mode.",
+            file=sys.stderr,
+        )
+        print(
+            "  -a, --animate        Animate maze drawing line by line.",
+            file=sys.stderr,
+        )
+        print(
+            "  --animate-algo       Animate pathfinding algorithm ",
+            end="",
+            file=sys.stderr,
+        )
+        print(
+            "visualization.",
+            file=sys.stderr,
+        )
         print("\nConfiguration file format:", file=sys.stderr)
-        print("  WIDTH=<number>        - Maze width in cells", file=sys.stderr)
-        print("  HEIGHT=<number>       - Maze height in cells", file=sys.stderr)
+        print(
+            "  WIDTH=<number>        - Maze width in cells",
+            file=sys.stderr,
+        )
+        print(
+            "  HEIGHT=<number>       - Maze height in cells",
+            file=sys.stderr,
+        )
         print("  ENTRY=<x>,<y>         - Entry coordinates", file=sys.stderr)
         print("  EXIT=<x>,<y>          - Exit coordinates", file=sys.stderr)
-        print("  OUTPUT_FILE=<path>    - Output file path", file=sys.stderr)
-        print("  PERFECT=<True|False>  - Perfect maze flag", file=sys.stderr)
-        print("  SEED=<number>         - Random seed (optional)", file=sys.stderr)
+        print(
+            "  OUTPUT_FILE=<path>    - Output file path",
+            file=sys.stderr,
+        )
+        print(
+            "  PERFECT=<True|False>  - Perfect maze flag",
+            file=sys.stderr,
+        )
+        print(
+            "  SEED=<number>         - Random seed (optional)",
+            file=sys.stderr,
+        )
         sys.exit(1)
 
     config_file = sys.argv[1]
     visual = "--visual" in sys.argv or "-v" in sys.argv
-    graphical = "--graphical" in sys.argv or "-g" in sys.argv
-    generate_maze_from_config(config_file, visual=visual, graphical=graphical)
+    animate = "--animate" in sys.argv or "-a" in sys.argv
+    animate_algo = "--animate-algo" in sys.argv
+    _enable_windows_ansi()
+    generate_maze_from_config(
+        config_file, visual=visual, animate=animate, animate_algo=animate_algo
+    )
 
 
 if __name__ == "__main__":

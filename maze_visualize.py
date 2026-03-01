@@ -6,7 +6,7 @@ from typing import Dict, List, Optional, TYPE_CHECKING
 from maze_pathfinding import get_path_cells
 
 if TYPE_CHECKING:
-    from maze import MazeGenerator
+    from mazegen import MazeGenerator
 
 
 def visualize(
@@ -26,7 +26,8 @@ def visualize(
 
     Args:
         gen: A MazeGenerator instance with a generated maze.
-        path: Shortest path from find_shortest_path; used when show_path is True.
+        path: Shortest path from find_shortest_path; used when
+              show_path is True.
         show_path: If True, display the shortest path with a marker.
         wall_color: ANSI color name for walls (e.g. 'red', 'cyan').
         path_color: ANSI color name for path cells.
@@ -85,13 +86,35 @@ def visualize(
                 if col == gen.width - 1:
                     grid[vr + 2][vc + 2] = "+"
 
+    start_row = ((gen.height - 5) // 2) * 2
+    start_col = ((gen.width - 7) // 2) * 2
+
+    pattern_42 = [
+        [1, 0, 0, 0, 0, 0, 0, 0, 1, 0, 1, 0, 1],  # Row 0
+        [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+        [1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1],  # Row 1
+        [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+        [1, 0, 1, 0, 1, 0, 0, 0, 1, 0, 1, 0, 1],  # Row 2
+        [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+        [0, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0, 0],  # Row 3
+        [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+        [0, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1, 0, 1],  # Row 4
+    ]
+
+    for i in range(9):
+        for j in range(13):
+            row = start_row + i
+            col = start_col + j
+            if pattern_42[i][j] == 1:  # Cell should be locked (fully walled)
+                grid[row + 1][col + 1] = chr(9608)
+
     pattern_cells = gen.get_42_pattern_cells()
     if pattern_42_color:
-        for (r, c) in pattern_cells:
+        for r, c in pattern_cells:
             grid[r * 2 + 1][c * 2 + 1] = "\u2591"
 
     if show_path and path:
-        for (r, c) in get_path_cells(gen, path):
+        for r, c in get_path_cells(gen, path):
             grid[r * 2 + 1][c * 2 + 1] = "*"
 
     entry_row, entry_col = gen.entry[1], gen.entry[0]
@@ -106,11 +129,13 @@ def visualize(
     pc = path_color or "green"
     ec_in = entry_color or "yellow"
     ec_out = exit_color or "yellow"
+    pc_42 = pattern_42_color or "blue"
 
     lines: List[str] = []
     current = ""
-    for row in grid:
-        for ch in row:
+    for grid_row in grid:
+        for ch in grid_row:
+            d: str
             if ch in "+-|":
                 d = ansi(wc)
             elif ch == "S":
@@ -119,8 +144,8 @@ def visualize(
                 d = ansi(ec_out)
             elif ch == "*":
                 d = ansi(pc)
-            elif ch == "\u2591":
-                d = ansi(pattern_42_color)
+            elif ch == chr(9608):
+                d = ansi(pc_42)
             else:
                 d = DEFAULT
             if d != current:

@@ -1,42 +1,49 @@
 PYTHON ?= python3
 VENV ?= .venv
 VENV_BIN := $(VENV)/bin
-MAIN ?= main.py
+VENV_PY := $(VENV_BIN)/python
+VENV_PIP := $(VENV_BIN)/pip
+MAIN ?= a_maze_ing.py
 REQ ?= requirements.txt
 MYPY_FLAGS := --warn-return-any --warn-unused-ignores --ignore-missing-imports --disallow-untyped-defs --check-untyped-defs
 PACKAGE ?= mazegen
+SRC = maze_animate.py maze_format.py maze_pathfinding.py maze_visualize.py a_maze_ing.py
 
-.PHONY: install run debug clean lint lint-strict package
+.PHONY: run debug clean lint lint-strict
 
-install:
+$(VENV_PY):
 	$(PYTHON) -m venv $(VENV)
-	$(VENV_BIN)/pip install --upgrade pip
+	$(VENV_PIP) install --upgrade pip
 	@if [ -f $(REQ) ]; then \
-		$(VENV_BIN)/pip install -r $(REQ); \
+		$(VENV_PIP) install -r $(REQ); \
 	else \
 		echo "No $(REQ) found; skipping dependency install"; \
 	fi
+	$(VENV_PIP) install --force-reinstall mazegen-1.0.0-py3-none-any.whl
+
+install: $(VENV_PY)
+	@echo "Environment ready."
 
 run: install
-	. $(VENV_BIN)/activate && $(PYTHON) $(MAIN)
+	$(VENV_BIN)/$(PYTHON) $(MAIN) config.txt -v
 
 debug: install
-	. $(VENV_BIN)/activate && $(PYTHON) -m pdb $(MAIN)
+	$(VENV_BIN)/$(PYTHON) -m pdb $(MAIN) config.txt
 
 clean:
+	rm -rf $(VENV)
 	find . -type d -name "__pycache__" -prune -exec rm -rf {} +
 	find . -type d -name ".mypy_cache" -prune -exec rm -rf {} +
 	find . -type d -name ".pytest_cache" -prune -exec rm -rf {} +
 	find . -type f -name "*.pyc" -delete
+	rm -f output_maze.txt
+
+fclean: clean
 
 lint: install
-	. $(VENV_BIN)/activate && $(VENV_BIN)/flake8 .
-	. $(VENV_BIN)/activate && $(VENV_BIN)/mypy . $(MYPY_FLAGS)
+	$(VENV_BIN)/flake8 $(SRC)
+	$(VENV_BIN)/mypy $(SRC) $(MYPY_FLAGS)
 
 lint-strict: install
-	. $(VENV_BIN)/activate && $(VENV_BIN)/flake8 .
-	. $(VENV_BIN)/activate && $(VENV_BIN)/mypy . --strict
-
-package: install
-	. $(VENV_BIN)/activate && $(VENV_BIN)/pip install --upgrade build
-	. $(VENV_BIN)/activate && $(PYTHON) -m build
+	$(VENV_BIN)/flake8 $(SRC)
+	$(VENV_BIN)/mypy $(SRC) $(MYPY_FLAGS) --strict

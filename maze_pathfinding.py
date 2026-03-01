@@ -5,7 +5,7 @@ from collections import deque
 from typing import List, Set, Tuple, TYPE_CHECKING
 
 if TYPE_CHECKING:
-    from maze import MazeGenerator
+    from mazegen import MazeGenerator
 
 
 def find_shortest_path(gen: "MazeGenerator") -> List[str]:
@@ -18,10 +18,19 @@ def find_shortest_path(gen: "MazeGenerator") -> List[str]:
     Returns:
         List of direction characters: N, E, S, W. Empty if no path exists.
     """
+    return _bfs_pathfind(gen)
+
+
+def _bfs_pathfind(gen: "MazeGenerator") -> List[str]:
+    """Find shortest path using Breadth-First Search."""
     entry_row, entry_col = gen.entry[1], gen.entry[0]
     exit_row, exit_col = gen.exit[1], gen.exit[0]
 
-    queue: deque = deque([(entry_row, entry_col, [])])
+    queue: deque[Tuple[int, int, List[str]]] = deque(
+        [
+            (entry_row, entry_col, []),
+        ]
+    )
     visited: Set[Tuple[int, int]] = {(entry_row, entry_col)}
 
     while queue:
@@ -49,7 +58,8 @@ def find_shortest_path(gen: "MazeGenerator") -> List[str]:
 
 
 def get_path_cells(
-    gen: "MazeGenerator", path_dirs: List[str]
+    gen: "MazeGenerator",
+    path_dirs: List[str],
 ) -> Set[Tuple[int, int]]:
     """
     Return the set of cell coordinates (row, col) for the given path

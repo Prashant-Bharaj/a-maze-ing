@@ -1,8 +1,0 @@
-# Large maze configuration to showcase the '42' pattern
-WIDTH=25
-HEIGHT=20
-ENTRY=0,0
-EXIT=24,19
-OUTPUT_FILE=large_maze.txt
-PERFECT=True
-SEED=2026

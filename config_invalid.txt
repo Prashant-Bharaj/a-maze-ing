@@ -1,6 +1,0 @@
-# Invalid configuration - missing WIDTH
-HEIGHT=10
-ENTRY=0,0
-EXIT=5,5
-OUTPUT_FILE=test.txt
-PERFECT=True

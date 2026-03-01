@@ -1,8 +1,0 @@
-# Non-perfect maze configuration
-WIDTH=15
-HEIGHT=12
-ENTRY=0,0
-EXIT=14,11
-OUTPUT_FILE=imperfect_maze.txt
-PERFECT=False
-SEED=999
